@@ -104,6 +104,39 @@ Browser Lens connects your IDE's AI agent to any running web page. Ask about any
 </details>
 
 <details>
+<summary><strong>Antigravity (Google)</strong></summary>
+
+**File:** `~/.gemini/antigravity/mcp_config.json`
+
+> Open via: `...` menu (top right) → MCP Servers → Manage MCP Servers → View raw config
+
+```json
+{
+  "mcpServers": {
+    "browser-lens": {
+      "command": "npx",
+      "args": ["-y", "browser-lens-mcp@latest"],
+      "env": {
+        "MCP_BROWSER_LENS_PORT": "3300",
+        "MCP_BROWSER_LENS_WS_PORT": "3301",
+        "MCP_BROWSER_LENS_CDP_PORT": "9222"
+      }
+    }
+  }
+}
+```
+
+After saving, click **Refresh** in Manage MCP Servers.
+
+**Usage in Antigravity chat:**
+```
+@browser-lens Chụp screenshot cho tôi xem
+@browser-lens/css-colors Show me the color palette
+/compare_with_figma
+```
+</details>
+
+<details>
 <summary><strong>Claude Code</strong></summary>
 
 ```bash
