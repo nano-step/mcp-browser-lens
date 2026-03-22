@@ -221,29 +221,45 @@ function captureSpacing(){
   return{timestamp:Date.now(),elements:entries,inconsistencies:[],spacingScale:Object.keys(Object.assign({},vals.margin,vals.padding)).sort(function(a,b){return parseFloat(a)-parseFloat(b)})};
 }
 
+var _ssLastOk=0,_ssFailing=false;
+function _doCapture(opts){
+  var w=Math.min(window.innerWidth,1440),h=Math.min(window.innerHeight,900);
+  return html2canvas(document.body,Object.assign({scale:1,width:w,height:h,logging:false,removeContainer:true,imageTimeout:5000},opts)).then(function(canvas){
+    var dataUrl=canvas.toDataURL('image/png');
+    _ssLastOk=Date.now();_ssFailing=false;
+    log('Screenshot OK: '+canvas.width+'x'+canvas.height);
+    return{timestamp:Date.now(),type:'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'};
+  });
+}
 function captureScreenshot(){
+  if(_ssFailing&&Date.now()-_ssLastOk<120000)return Promise.resolve(null);
   return new Promise(function(resolve){
+    function run(){
+      _doCapture({useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(resolve)
+      .catch(function(){
+        log('Retrying screenshot without cross-origin images...');
+        _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
+          if(el.tagName==='IMG'){var s=el.src||'';if(s&&!s.startsWith(location.origin)&&!s.startsWith('data:'))return true;}
+          return false;
+        }}).then(resolve)
+        .catch(function(e){
+          _ssFailing=true;
+          err('Screenshot failed (will retry in 2min)',e);
+          resolve(null);
+        });
+      });
+    }
     try{
-      if(typeof html2canvas==='function'){
-        html2canvas(document.body,{useCORS:true,allowTaint:true,scale:1,width:Math.min(window.innerWidth,1440),height:Math.min(window.innerHeight,900),logging:false}).then(function(canvas){
-          try{var dataUrl=canvas.toDataURL('image/png');log('Screenshot captured via html2canvas: '+canvas.width+'x'+canvas.height);resolve({timestamp:Date.now(),type:'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'});}
-          catch(e){err('Canvas toDataURL failed',e);resolve(null);}
-        }).catch(function(e){err('html2canvas failed',e);resolve(null);});
-      }else{
-        log('html2canvas not available, loading from CDN...');
-        var script=document.createElement('script');
-        script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        script.onload=function(){
-          log('html2canvas loaded, capturing...');
-          html2canvas(document.body,{useCORS:true,allowTaint:true,scale:1,width:Math.min(window.innerWidth,1440),height:Math.min(window.innerHeight,900),logging:false}).then(function(canvas){
-            try{var dataUrl=canvas.toDataURL('image/png');log('Screenshot captured: '+canvas.width+'x'+canvas.height);resolve({timestamp:Date.now(),type:'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'});}
-            catch(e){err('Canvas toDataURL failed',e);resolve(null);}
-          }).catch(function(e){err('html2canvas render failed',e);resolve(null);});
-        };
-        script.onerror=function(){err('Failed to load html2canvas from CDN');resolve(null);};
-        document.head.appendChild(script);
+      if(typeof html2canvas==='function'){run();}
+      else{
+        log('Loading html2canvas...');
+        var s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=function(){log('html2canvas ready');run();};
+        s.onerror=function(){err('CDN load failed');resolve(null);};
+        document.head.appendChild(s);
       }
-    }catch(e){err('Screenshot capture error',e);resolve(null);}
+    }catch(e){err('Screenshot error',e);resolve(null);}
   });
 }
 
