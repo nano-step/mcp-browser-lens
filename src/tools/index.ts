@@ -1177,4 +1177,69 @@ export function registerTools(server: McpServer, store: BrowserStore, wsChannel?
       });
     },
   );
+
+  server.registerTool(
+    "screenshot_element",
+    {
+      title: "Screenshot Element",
+      description:
+        "Take a screenshot of a specific UI component/element by CSS selector. Returns the cropped PNG image of just that element. Use this to visually inspect a button, header, card, form, or any specific part of the page.",
+      inputSchema: {
+        selector: z.string().describe("CSS selector of the element to screenshot (e.g. 'header', '.hero-btn', '#login-form', 'nav.sidebar')"),
+      },
+    },
+    async (args) => {
+      if (!wsChannel) {
+        return text({
+          message: "No live browser connection. This tool requires the bookmarklet to be active.",
+          suggestion: "Use get_connection_status for setup instructions.",
+        });
+      }
+
+      const before = store.getScreenshots().length;
+      const ok = await wsChannel.requestElementScreenshot(args.selector);
+
+      if (ok) {
+        const shots = store.getScreenshots();
+        const elShot = shots.filter((s) => s.type === "element" && s.selector === args.selector).pop()
+          ?? shots[shots.length - 1];
+        if (elShot) {
+          const base64 = elShot.dataUrl.replace(/^data:image\/\w+;base64,/, "");
+          const el = store.getElement(args.selector);
+          const desc: string[] = [
+            `## Element Screenshot: \`${args.selector}\``,
+            `**Size:** ${elShot.width}x${elShot.height}px`,
+          ];
+          if (el) {
+            desc.push(`**Tag:** ${el.snapshot?.tagName ?? "?"}`);
+            desc.push(`**Text:** "${(el.snapshot?.textContent ?? "").slice(0, 100)}"`);
+            desc.push(`**Classes:** ${el.computedStyle?.appliedClasses?.join(", ") ?? "none"}`);
+            const s = el.computedStyle?.styles ?? {};
+            if (s.backgroundColor && s.backgroundColor !== "rgba(0, 0, 0, 0)") desc.push(`**Background:** ${s.backgroundColor}`);
+            if (s.color) desc.push(`**Color:** ${s.color}`);
+            if (s.fontSize) desc.push(`**Font:** ${s.fontSize} ${s.fontWeight ?? ""} ${s.fontFamily ?? ""}`);
+          }
+          return {
+            content: [
+              { type: "image" as const, data: base64, mimeType: "image/png" as const },
+              { type: "text" as const, text: desc.join("\n") },
+            ],
+          };
+        }
+      }
+
+      const after = store.getScreenshots().length;
+      if (after > before) {
+        const shot = store.getLatestScreenshot();
+        if (shot) {
+          return imageContent(shot.dataUrl, `Screenshot of ${args.selector} (${shot.width}x${shot.height})`);
+        }
+      }
+
+      return text({
+        message: `Could not screenshot '${args.selector}'. The element may not exist, be off-screen, or contain cross-origin content.`,
+        suggestion: "Try: 1) Scroll the element into view first, 2) Use a broader selector, 3) Use trigger_screenshot for full page instead.",
+      });
+    },
+  );
 }

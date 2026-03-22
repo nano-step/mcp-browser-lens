@@ -6,6 +6,7 @@ export interface WsCommandChannel {
   wss: WebSocketServer;
   sendCommand: (action: string, params?: Record<string, unknown>) => boolean;
   requestScreenshot: () => Promise<boolean>;
+  requestElementScreenshot: (selector: string) => Promise<boolean>;
 }
 
 export function createWsReceiver(
@@ -47,6 +48,36 @@ export function createWsReceiver(
       try {
         client.send(
           JSON.stringify({ type: "command", action: "screenshot" }),
+        );
+      } catch {
+        screenshotResolve = null;
+        resolve(false);
+        return;
+      }
+      setTimeout(() => {
+        if (screenshotResolve === resolve) {
+          screenshotResolve = null;
+          resolve(false);
+        }
+      }, 15000);
+    });
+  }
+
+  function requestElementScreenshot(selector: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      const client = getActiveClient();
+      if (!client) {
+        resolve(false);
+        return;
+      }
+      screenshotResolve = resolve;
+      try {
+        client.send(
+          JSON.stringify({
+            type: "command",
+            action: "element_screenshot",
+            selector,
+          }),
         );
       } catch {
         screenshotResolve = null;
@@ -125,5 +156,5 @@ export function createWsReceiver(
     );
   });
 
-  return { wss, sendCommand, requestScreenshot };
+  return { wss, sendCommand, requestScreenshot, requestElementScreenshot };
 }

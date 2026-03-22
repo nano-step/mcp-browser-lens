@@ -279,7 +279,7 @@ describe("MCP Tools Integration", () => {
 
     it("lists tools", async () => {
       const tools = await client.listTools();
-      expect(tools.tools.length).toBe(30);
+      expect(tools.tools.length).toBe(31);
     });
   });
 });

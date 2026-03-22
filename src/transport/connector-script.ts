@@ -332,6 +332,42 @@ try{
   observer.observe(document.documentElement,{childList:true,attributes:true,subtree:true,attributeOldValue:true});
 }catch(e){err('MutationObserver failed',e);}
 
+function captureElementScreenshot(selector){
+  return new Promise(function(resolve){
+    var el=document.querySelector(selector);
+    if(!el){resolve(null);return;}
+    function doCapture(){
+      var rect=el.getBoundingClientRect();
+      var opts={scale:1,logging:false,removeContainer:true,imageTimeout:5000,
+        x:rect.left+window.scrollX,y:rect.top+window.scrollY,
+        width:Math.ceil(rect.width),height:Math.ceil(rect.height),
+        windowWidth:document.documentElement.scrollWidth,
+        windowHeight:document.documentElement.scrollHeight,
+        useCORS:true,allowTaint:false,foreignObjectRendering:false};
+      html2canvas(el,{scale:1,logging:false,removeContainer:true,imageTimeout:5000,useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(function(canvas){
+        var dataUrl=_safeExport(canvas);
+        if(dataUrl){
+          log('Element screenshot OK: '+selector+' '+canvas.width+'x'+canvas.height);
+          resolve({timestamp:Date.now(),type:'element',selector:selector,width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'});
+        }else{
+          html2canvas(el,{scale:1,logging:false,removeContainer:true,useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(e){var t=e.tagName;return t==='IMG'||t==='VIDEO'||t==='IFRAME'||t==='CANVAS';}}).then(function(c2){
+            var d2=_safeExport(c2);
+            if(d2)resolve({timestamp:Date.now(),type:'element',selector:selector,width:c2.width,height:c2.height,dataUrl:d2,format:'png'});
+            else resolve(null);
+          }).catch(function(){resolve(null);});
+        }
+      }).catch(function(){resolve(null);});
+    }
+    if(typeof html2canvas==='function'){doCapture();}
+    else{
+      var s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=doCapture;s.onerror=function(){resolve(null);};
+      document.head.appendChild(s);
+    }
+  });
+}
+
 function handleCommand(cmd){
   try{
     if(cmd.action==='screenshot'){
@@ -339,6 +375,13 @@ function handleCommand(cmd){
       captureScreenshot().then(function(shot){
         if(shot){log('Sending requested screenshot');send({timestamp:Date.now(),screenshots:[shot]});}
         else{send({timestamp:Date.now(),screenshotError:'capture failed'});}
+      });
+    }
+    else if(cmd.action==='element_screenshot'&&cmd.selector){
+      log('Server requested element screenshot: '+cmd.selector);
+      captureElementScreenshot(cmd.selector).then(function(shot){
+        if(shot){log('Sending element screenshot: '+cmd.selector);send({timestamp:Date.now(),screenshots:[shot]});}
+        else{send({timestamp:Date.now(),screenshotError:'element capture failed for '+cmd.selector});}
       });
     }
     else if(cmd.action==='query_element'&&cmd.selector){
