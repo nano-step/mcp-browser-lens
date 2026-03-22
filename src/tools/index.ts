@@ -679,4 +679,392 @@ export function registerTools(server: McpServer, store: BrowserStore): void {
       return text({ cleared: count, remaining: 0 });
     },
   );
+
+  server.registerTool(
+    "get_connection_status",
+    {
+      title: "Connection Status",
+      description:
+        "Check if the browser is connected and what data is available. Use this first to verify the bookmarklet is active.",
+    },
+    () => {
+      const info = store.getPageInfo();
+      const connected = info.hasDom || info.totalElements > 0;
+      const httpPort = parseInt(process.env.MCP_BROWSER_LENS_PORT ?? "3202", 10);
+      return text({
+        connected,
+        connectorUrl: `http://localhost:${httpPort}`,
+        instructions: connected
+          ? "Browser connected! Data is available for inspection."
+          : "Not connected. Open http://localhost:" + httpPort + " in your browser, drag the bookmarklet to your bookmarks bar, then click it on any page.",
+        dataAvailable: {
+          dom: info.hasDom,
+          elements: info.totalElements,
+          screenshots: info.screenshotCount,
+          cssVariables: info.hasCssVariables,
+          typography: info.hasTypography,
+          colors: info.hasColors,
+          accessibility: info.hasAccessibility,
+          responsive: info.hasResponsive,
+          spacing: info.hasSpacing,
+          mutations: info.mutationCount,
+          comparisons: info.comparisonCount,
+        },
+        url: info.url,
+        title: info.title,
+      });
+    },
+  );
+
+  server.registerTool(
+    "get_full_page_analysis",
+    {
+      title: "Full Page Analysis",
+      description:
+        "Get a comprehensive analysis of the entire page: structure, design tokens, typography, colors, spacing, accessibility — everything in one call. Best used as a first step after connecting.",
+    },
+    () => {
+      const dom = store.getDom();
+      if (!dom) return text({ message: "No browser connected. Use get_connection_status for setup instructions." });
+
+      const colors = store.getColors();
+      const typo = store.getTypography();
+      const spacing = store.getSpacing();
+      const acc = store.getAccessibility();
+      const resp = store.getResponsive();
+      const vars = store.getCssVariables();
+      const elements = store.getElements();
+
+      const sections: string[] = [];
+      sections.push(`# Full Page Analysis: ${dom.title}`);
+      sections.push(`**URL:** ${dom.url}`);
+      sections.push(`**Viewport:** ${dom.viewport.width}x${dom.viewport.height} @${dom.viewport.devicePixelRatio}x`);
+      sections.push(`**Total Elements:** ${dom.totalElements}`);
+      sections.push(`**Captured Details:** ${Object.keys(elements).length} elements`);
+      sections.push("");
+
+      sections.push("## Semantic Structure");
+      for (const node of dom.semanticStructure) {
+        const prefix = node.level ? "  ".repeat(node.level - 1) + "- " : "- ";
+        sections.push(`${prefix}<${node.tag}>${node.label ? ` "${node.label}"` : ""} → \`${node.selector}\``);
+      }
+      sections.push("");
+
+      if (vars) {
+        sections.push(`## Design Tokens (${vars.totalCount} CSS variables)`);
+        const grouped: Record<string, string[]> = {};
+        for (const [k, v] of Object.entries(vars.variables)) {
+          const category = k.includes("color") || k.includes("bg") || v.startsWith("#") || v.startsWith("rgb") ? "Colors"
+            : k.includes("font") || k.includes("size") || k.includes("weight") ? "Typography"
+            : k.includes("space") || k.includes("gap") || k.includes("radius") || k.includes("padding") || k.includes("margin") ? "Spacing"
+            : "Other";
+          if (!grouped[category]) grouped[category] = [];
+          grouped[category].push(`\`${k}\`: ${v}`);
+        }
+        for (const [cat, items] of Object.entries(grouped)) {
+          sections.push(`### ${cat}`);
+          for (const item of items.slice(0, 15)) sections.push(`- ${item}`);
+          sections.push("");
+        }
+      }
+
+      if (typo) {
+        sections.push(`## Typography (${typo.fonts.length} combinations)`);
+        for (const f of typo.fonts.slice(0, 8)) {
+          sections.push(`- **${f.family}** ${f.weight} ${f.size}/${f.lineHeight} — ${f.count} elements`);
+        }
+        sections.push("");
+      }
+
+      if (colors) {
+        sections.push(`## Color Palette (${colors.totalUniqueColors} unique colors)`);
+        sections.push("### Text Colors");
+        for (const c of colors.colors.slice(0, 5)) sections.push(`- \`${c.hex}\` — ${c.count} uses`);
+        sections.push("### Background Colors");
+        for (const c of colors.backgroundColors.slice(0, 5)) sections.push(`- \`${c.hex}\` — ${c.count} uses`);
+        sections.push("### Border Colors");
+        for (const c of colors.borderColors.slice(0, 3)) sections.push(`- \`${c.hex}\` — ${c.count} uses`);
+        sections.push("");
+      }
+
+      if (spacing) {
+        sections.push(`## Spacing Scale`);
+        sections.push(`Values in use: ${spacing.spacingScale.join(", ")}`);
+        if (spacing.inconsistencies.length > 0) {
+          sections.push(`⚠️ ${spacing.inconsistencies.length} inconsistencies detected`);
+        }
+        sections.push("");
+      }
+
+      if (acc) {
+        sections.push("## Accessibility");
+        sections.push(`- Interactive: ${acc.summary.totalInteractive} (${acc.summary.withLabels} with labels)`);
+        sections.push(`- Images: ${acc.summary.imagesWithAlt} with alt / ${acc.summary.imagesWithoutAlt} missing`);
+        sections.push(`- Headings: ${Object.entries(acc.summary.headingLevels).map(([k, v]) => `${k}:${v}`).join(", ")}`);
+        sections.push(`- Landmarks: ${acc.summary.landmarks.join(", ") || "none"}`);
+        if (acc.summary.issues.length > 0) {
+          sections.push(`### Issues (${acc.summary.issues.length})`);
+          for (const i of acc.summary.issues.slice(0, 10)) sections.push(`- ${i}`);
+        }
+        sections.push("");
+      }
+
+      if (resp) {
+        sections.push("## Responsive");
+        sections.push(`Active: ${resp.activeMediaQueries.join(", ") || "no matched breakpoints"}`);
+        sections.push(`Scroll: ${resp.viewport.scrollWidth}x${resp.viewport.scrollHeight}`);
+      }
+
+      return { content: [{ type: "text" as const, text: sections.join("\n") }] };
+    },
+  );
+
+  server.registerTool(
+    "get_design_tokens",
+    {
+      title: "Design Tokens",
+      description:
+        "Extract design tokens from the page: CSS variables grouped by category (colors, typography, spacing, breakpoints), font stacks, and color palette as a design system reference.",
+    },
+    () => {
+      const vars = store.getCssVariables();
+      const colors = store.getColors();
+      const typo = store.getTypography();
+      const spacing = store.getSpacing();
+
+      if (!vars && !colors && !typo) return text({ message: "No design data captured. Connect browser first." });
+
+      const tokens: Record<string, unknown> = {};
+
+      if (vars) {
+        const colorTokens: Record<string, string> = {};
+        const typographyTokens: Record<string, string> = {};
+        const spacingTokens: Record<string, string> = {};
+        const otherTokens: Record<string, string> = {};
+        for (const [k, v] of Object.entries(vars.variables)) {
+          if (k.includes("color") || k.includes("bg") || v.startsWith("#") || v.startsWith("rgb") || v.startsWith("hsl")) colorTokens[k] = v;
+          else if (k.includes("font") || k.includes("size") || k.includes("weight") || k.includes("line-height")) typographyTokens[k] = v;
+          else if (k.includes("space") || k.includes("gap") || k.includes("radius") || k.includes("padding") || k.includes("margin")) spacingTokens[k] = v;
+          else otherTokens[k] = v;
+        }
+        tokens.cssVariables = { colors: colorTokens, typography: typographyTokens, spacing: spacingTokens, other: otherTokens };
+      }
+
+      if (colors) {
+        tokens.colorPalette = {
+          text: colors.colors.slice(0, 10).map((c) => ({ hex: c.hex, count: c.count })),
+          background: colors.backgroundColors.slice(0, 10).map((c) => ({ hex: c.hex, count: c.count })),
+          border: colors.borderColors.slice(0, 5).map((c) => ({ hex: c.hex, count: c.count })),
+        };
+      }
+
+      if (typo) {
+        tokens.fontStacks = typo.fonts.slice(0, 10).map((f) => ({
+          family: f.family, size: f.size, weight: f.weight, lineHeight: f.lineHeight, count: f.count,
+        }));
+      }
+
+      if (spacing) {
+        tokens.spacingScale = spacing.spacingScale;
+      }
+
+      return text(tokens);
+    },
+  );
+
+  server.registerTool(
+    "get_visual_diff_report",
+    {
+      title: "Visual Diff Report",
+      description:
+        "Generate a comprehensive visual diff report comparing the current UI against all previously compared Figma specs. Shows overall score, per-element results, and prioritized fix list.",
+    },
+    () => {
+      const comparisons = store.getComparisons();
+      if (comparisons.length === 0) return text({ message: "No comparisons done. Use compare_with_figma first." });
+
+      const scores = comparisons.map((c) => c.score);
+      const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      const passing = comparisons.filter((c) => c.score >= 90).length;
+      const failing = comparisons.filter((c) => c.score < 90).length;
+
+      const allDiffs = comparisons.flatMap((c) => c.differences.map((d) => ({ ...d, element: c.selector })));
+      const critical = allDiffs.filter((d) => d.severity === "critical");
+      const major = allDiffs.filter((d) => d.severity === "major");
+      const minor = allDiffs.filter((d) => d.severity === "minor");
+
+      const sections: string[] = [];
+      sections.push("# Visual Diff Report");
+      sections.push(`**Overall Score:** ${avgScore}/100`);
+      sections.push(`**Elements Compared:** ${comparisons.length} (${passing} passing, ${failing} failing)`);
+      sections.push(`**Total Differences:** ${allDiffs.length} (${critical.length} critical, ${major.length} major, ${minor.length} minor)`);
+      sections.push("");
+
+      sections.push("## Per-Element Results");
+      for (const c of comparisons.sort((a, b) => a.score - b.score)) {
+        const icon = c.score >= 90 ? "✅" : c.score >= 50 ? "⚠️" : "❌";
+        sections.push(`${icon} **${c.selector}** — ${c.score}/100 (${c.status})`);
+        if (c.differences.length > 0) {
+          for (const d of c.differences) {
+            sections.push(`   - ${d.property}: \`${d.actual}\` → \`${d.expected}\` (${d.severity})`);
+          }
+        }
+      }
+      sections.push("");
+
+      if (critical.length + major.length > 0) {
+        sections.push("## Priority Fixes");
+        for (const d of [...critical, ...major]) {
+          sections.push(`- **${d.element}** → ${d.property}: ${d.suggestion}`);
+        }
+      }
+
+      return { content: [{ type: "text" as const, text: sections.join("\n") }] };
+    },
+  );
+
+  server.registerTool(
+    "capture_screenshot_with_analysis",
+    {
+      title: "Screenshot with Analysis",
+      description:
+        "Get the latest screenshot AND a detailed analysis of what's visible: layout structure, key elements, colors, text content, interactive components. Returns both the image and a text description.",
+    },
+    () => {
+      const shot = store.getLatestScreenshot();
+      const dom = store.getDom();
+      const colors = store.getColors();
+      const typo = store.getTypography();
+      const elements = store.getElements();
+      const acc = store.getAccessibility();
+
+      if (!dom) return text({ message: "No browser connected. Use get_connection_status for setup instructions." });
+
+      const analysis: string[] = [];
+      analysis.push(`# Screenshot Analysis: ${dom.title}`);
+      analysis.push(`**URL:** ${dom.url}`);
+      analysis.push(`**Viewport:** ${dom.viewport.width}x${dom.viewport.height}`);
+      analysis.push("");
+
+      analysis.push("## Page Layout");
+      const layoutElements = Object.entries(elements);
+      const byDisplay: Record<string, string[]> = {};
+      for (const [sel, el] of layoutElements) {
+        const d = el.layout?.display ?? "block";
+        if (!byDisplay[d]) byDisplay[d] = [];
+        byDisplay[d].push(`${sel} (${Math.round(el.layout?.box.width ?? 0)}x${Math.round(el.layout?.box.height ?? 0)})`);
+      }
+      for (const [display, items] of Object.entries(byDisplay)) {
+        if (items.length > 0) analysis.push(`- **${display}**: ${items.slice(0, 5).join(", ")}${items.length > 5 ? ` +${items.length - 5} more` : ""}`);
+      }
+      analysis.push("");
+
+      analysis.push("## Visible Elements");
+      for (const [sel, el] of layoutElements.slice(0, 15)) {
+        const s = el.computedStyle?.styles ?? {};
+        const w = Math.round(el.layout?.box.width ?? 0);
+        const h = Math.round(el.layout?.box.height ?? 0);
+        const bg = s.backgroundColor && s.backgroundColor !== "rgba(0, 0, 0, 0)" ? ` bg:${s.backgroundColor}` : "";
+        const color = s.color ? ` text:${s.color}` : "";
+        const font = s.fontSize ? ` ${s.fontSize}` : "";
+        analysis.push(`- \`${sel}\` — ${w}x${h}${bg}${color}${font}`);
+      }
+      analysis.push("");
+
+      if (colors) {
+        analysis.push("## Dominant Colors");
+        analysis.push(`Backgrounds: ${colors.backgroundColors.slice(0, 3).map((c) => c.hex).join(", ")}`);
+        analysis.push(`Text: ${colors.colors.slice(0, 3).map((c) => c.hex).join(", ")}`);
+        analysis.push("");
+      }
+
+      if (typo) {
+        analysis.push("## Text Styles");
+        for (const f of typo.fonts.slice(0, 4)) {
+          analysis.push(`- ${f.family} ${f.weight} ${f.size} — ${f.count} elements`);
+        }
+        analysis.push("");
+      }
+
+      if (acc && acc.summary.issues.length > 0) {
+        analysis.push(`## Issues Spotted (${acc.summary.issues.length})`);
+        for (const i of acc.summary.issues.slice(0, 5)) analysis.push(`- ${i}`);
+      }
+
+      const content: Array<{ type: "text"; text: string } | { type: "image"; data: string; mimeType: "image/png" }> = [];
+
+      if (shot) {
+        const base64 = shot.dataUrl.replace(/^data:image\/\w+;base64,/, "");
+        content.push({ type: "image" as const, data: base64, mimeType: "image/png" as const });
+      }
+
+      content.push({ type: "text" as const, text: analysis.join("\n") });
+      return { content };
+    },
+  );
+
+  server.registerTool(
+    "inspect_feature_area",
+    {
+      title: "Inspect Feature Area",
+      description:
+        "Inspect a specific feature area of the page by providing a parent selector. Returns screenshot + all child elements with their styles, layout, and a summary of the feature's visual design.",
+      inputSchema: {
+        selector: z.string().describe("CSS selector of the feature container (e.g. '.hero-section', '#sidebar', 'nav')"),
+      },
+    },
+    (args) => {
+      const dom = store.getDom();
+      if (!dom) return text({ message: "No browser connected." });
+
+      const elements = store.getElements();
+      const matching = Object.entries(elements).filter(([sel]) =>
+        sel === args.selector || sel.startsWith(args.selector + " ") || sel.startsWith(args.selector + ".")
+      );
+
+      if (matching.length === 0) {
+        const domResults = store.querySelector(args.selector);
+        if (domResults.length > 0) {
+          return text({
+            message: `Found ${domResults.length} element(s) in DOM tree but no detailed data. Elements nearby in the capture:`,
+            domMatches: domResults.slice(0, 5).map((e) => ({ selector: e.selector, tag: e.tagName, children: e.childCount })),
+            allCapturedSelectors: Object.keys(elements).slice(0, 20),
+          });
+        }
+        return text({ error: `No elements matching '${args.selector}'. Available: ${Object.keys(elements).slice(0, 10).join(", ")}` });
+      }
+
+      const sections: string[] = [];
+      sections.push(`# Feature Area: ${args.selector}`);
+      sections.push(`**Elements Found:** ${matching.length}`);
+      sections.push("");
+
+      for (const [sel, el] of matching.slice(0, 20)) {
+        const s = el.computedStyle?.styles ?? {};
+        const l = el.layout;
+        sections.push(`## \`${sel}\``);
+        sections.push(`- **Tag:** ${el.snapshot?.tagName ?? "?"} | **Display:** ${l?.display ?? "?"} | **Size:** ${Math.round(l?.box.width ?? 0)}x${Math.round(l?.box.height ?? 0)}`);
+        if (el.snapshot?.textContent) sections.push(`- **Text:** "${el.snapshot.textContent.slice(0, 100)}"`);
+        const keyStyles: string[] = [];
+        if (s.backgroundColor && s.backgroundColor !== "rgba(0, 0, 0, 0)") keyStyles.push(`bg: ${s.backgroundColor}`);
+        if (s.color) keyStyles.push(`color: ${s.color}`);
+        if (s.fontSize) keyStyles.push(`font: ${s.fontSize} ${s.fontWeight ?? ""}`);
+        if (s.padding && s.padding !== "0px") keyStyles.push(`padding: ${s.padding}`);
+        if (s.gap && s.gap !== "normal") keyStyles.push(`gap: ${s.gap}`);
+        if (s.borderRadius && s.borderRadius !== "0px") keyStyles.push(`radius: ${s.borderRadius}`);
+        if (keyStyles.length > 0) sections.push(`- **Styles:** ${keyStyles.join(" | ")}`);
+        if (el.snapshot?.classNames?.length) sections.push(`- **Classes:** ${el.snapshot.classNames.join(", ")}`);
+        sections.push("");
+      }
+
+      const content: Array<{ type: "text"; text: string } | { type: "image"; data: string; mimeType: "image/png" }> = [];
+      const shot = store.getLatestScreenshot();
+      if (shot) {
+        const base64 = shot.dataUrl.replace(/^data:image\/\w+;base64,/, "");
+        content.push({ type: "image" as const, data: base64, mimeType: "image/png" as const });
+      }
+      content.push({ type: "text" as const, text: sections.join("\n") });
+      return { content };
+    },
+  );
 }

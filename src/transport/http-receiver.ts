@@ -193,7 +193,10 @@ export function createHttpReceiver(
         elements: info.totalElements,
         hasDom: info.hasDom,
         screenshots: info.screenshotCount,
+        httpPort: port,
+        wsPort: effectiveWsPort,
         uptime: process.uptime(),
+        connectorUrl: `http://localhost:${port}`,
       });
       return;
     }
@@ -232,9 +235,12 @@ export function createHttpReceiver(
     }
   });
 
-  server.listen(port, () => {
+  server.listen(port, "0.0.0.0", () => {
     process.stderr.write(
-      `[mcp-browser-lens] HTTP listening on port ${port}\n`,
+      `[mcp-browser-lens] HTTP listening on http://localhost:${port}\n`,
+    );
+    process.stderr.write(
+      `[mcp-browser-lens] Open http://localhost:${port} to get the bookmarklet\n`,
     );
   });
 
