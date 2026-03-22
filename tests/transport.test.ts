@@ -176,12 +176,13 @@ describe("Transport Layer", () => {
       }
     });
 
-    it("uses html2canvas for screenshots", () => {
+    it("uses html2canvas for screenshots via eval (CSP-safe)", () => {
       const script = getConnectorScript(3300, 3301);
       expect(script).toContain("html2canvas");
-      expect(script).toContain("cdnjs.cloudflare.com");
-      expect(script).not.toContain("XMLSerializer");
-      expect(script).not.toContain("new XMLSerializer");
+      expect(script).toContain("_loadH2C");
+      expect(script).toContain("/html2canvas.js");
+      expect(script).toContain("eval");
+      expect(script).not.toContain("cdnjs.cloudflare.com");
     });
 
     it("has tainted canvas protection", () => {

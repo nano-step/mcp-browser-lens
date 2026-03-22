@@ -1,7 +1,32 @@
 import * as http from "node:http";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { BrowserStore } from "../store/browser-store.js";
 import type { IngestPayload } from "../store/types.js";
 import { getConnectorScript } from "./connector-script.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let _html2canvasCache: string | null = null;
+function getHtml2canvasSource(): string {
+  if (_html2canvasCache) return _html2canvasCache;
+  const candidates = [
+    path.resolve(__dirname, "..", "..", "..", "node_modules", "html2canvas", "dist", "html2canvas.min.js"),
+    path.resolve(__dirname, "..", "..", "node_modules", "html2canvas", "dist", "html2canvas.min.js"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) {
+        _html2canvasCache = fs.readFileSync(p, "utf-8");
+        return _html2canvasCache;
+      }
+    } catch { /* skip */ }
+  }
+  _html2canvasCache = "/* html2canvas not found */";
+  return _html2canvasCache;
+}
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -183,6 +208,15 @@ export function createHttpReceiver(
         "Content-Type": "application/javascript",
       });
       res.end(getConnectorScript(port, effectiveWsPort));
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/html2canvas.js") {
+      res.writeHead(200, {
+        ...CORS_HEADERS,
+        "Content-Type": "application/javascript",
+      });
+      res.end(getHtml2canvasSource());
       return;
     }
 

@@ -274,20 +274,24 @@ function _renderScreenshot(target,type,selector){
   });
 }
 
+function _loadH2C(){
+  return new Promise(function(resolve){
+    if(typeof html2canvas==='function'){resolve(true);return;}
+    log('Loading html2canvas via eval (CSP-safe)...');
+    fetch(HTTP_URL.replace('/ingest','/html2canvas.js')).then(function(r){return r.text();}).then(function(code){
+      (0,eval)(code);
+      log('html2canvas loaded: '+(typeof html2canvas==='function'));
+      resolve(typeof html2canvas==='function');
+    }).catch(function(e){err('html2canvas load failed',e);resolve(false);});
+  });
+}
+
 function captureScreenshot(){
   return new Promise(function(resolve){
-    function run(){_renderScreenshot(document.body,'viewport').then(resolve);}
-    try{
-      if(typeof html2canvas==='function'){run();}
-      else{
-        log('Loading html2canvas...');
-        var s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload=function(){log('html2canvas ready');run();};
-        s.onerror=function(){err('CDN load failed');resolve(null);};
-        document.head.appendChild(s);
-      }
-    }catch(e){resolve(null);}
+    _loadH2C().then(function(ok){
+      if(!ok){resolve(null);return;}
+      _renderScreenshot(document.body,'viewport').then(resolve);
+    });
   });
 }
 
@@ -351,14 +355,10 @@ function captureElementScreenshot(selector){
   return new Promise(function(resolve){
     var el=document.querySelector(selector);
     if(!el){resolve(null);return;}
-    function run(){_renderScreenshot(el,'element',selector).then(resolve);}
-    if(typeof html2canvas==='function'){run();}
-    else{
-      var s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload=run;s.onerror=function(){resolve(null);};
-      document.head.appendChild(s);
-    }
+    _loadH2C().then(function(ok){
+      if(!ok){resolve(null);return;}
+      _renderScreenshot(el,'element',selector).then(resolve);
+    });
   });
 }
 
