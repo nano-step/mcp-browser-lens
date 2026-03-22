@@ -2,6 +2,10 @@
   if (window.__MCP_BROWSER_LENS_EXT__) return;
   window.__MCP_BROWSER_LENS_EXT__ = true;
 
+  window.addEventListener("__BROWSER_LENS_CAPTURE__", function () {
+    chrome.runtime.sendMessage({ type: "captureScreenshot" });
+  });
+
   chrome.storage.local.get({ enabled: true, httpPort: 3202 }, function (cfg) {
     if (!cfg.enabled) return;
     var port = cfg.httpPort || 3202;

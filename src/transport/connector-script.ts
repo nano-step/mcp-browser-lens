@@ -288,17 +288,11 @@ function _loadH2C(){
 }
 
 function _extensionCapture(){
-  return new Promise(function(resolve){
-    try{
-      if(typeof chrome!=='undefined'&&chrome.runtime&&chrome.runtime.sendMessage){
-        chrome.runtime.sendMessage({type:'captureScreenshot'},function(resp){
-          if(chrome.runtime.lastError){resolve(false);return;}
-          log('Extension screenshot requested');
-          resolve(true);
-        });
-      }else{resolve(false);}
-    }catch(e){resolve(false);}
-  });
+  try{
+    log('Requesting screenshot via extension (DOM event)...');
+    window.dispatchEvent(new CustomEvent('__BROWSER_LENS_CAPTURE__'));
+    return Promise.resolve(true);
+  }catch(e){return Promise.resolve(false);}
 }
 
 function captureScreenshot(){

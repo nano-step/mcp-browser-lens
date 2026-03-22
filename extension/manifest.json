@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Browser Lens — MCP UI Inspector",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Real-time DOM, CSS, layout inspection for your IDE's AI agent. Persists across page reloads.",
   "permissions": ["storage", "scripting", "activeTab", "tabs"],
   "host_permissions": ["<all_urls>"],
