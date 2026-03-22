@@ -3,8 +3,8 @@
   <h1>mcp-browser-lens</h1>
   <p><strong>Your browser's UI, deeply understood by your IDE's AI agent.</strong></p>
   <p>
-    <a href="https://www.npmjs.com/package/mcp-browser-lens"><img src="https://img.shields.io/npm/v/mcp-browser-lens?style=flat-square&color=8b5cf6" alt="npm"></a>
-    <a href="https://www.npmjs.com/package/mcp-browser-lens"><img src="https://img.shields.io/npm/dm/mcp-browser-lens?style=flat-square&color=8b5cf6" alt="downloads"></a>
+    <a href="https://www.npmjs.com/package/browser-lens-mcp"><img src="https://img.shields.io/npm/v/browser-lens-mcp?style=flat-square&color=8b5cf6" alt="npm"></a>
+    <a href="https://www.npmjs.com/package/browser-lens-mcp"><img src="https://img.shields.io/npm/dm/browser-lens-mcp?style=flat-square&color=8b5cf6" alt="downloads"></a>
     <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-Compatible-blue?style=flat-square" alt="MCP"></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-20%2B-green?style=flat-square" alt="Node"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"></a>
@@ -68,7 +68,7 @@ Browser Lens connects your IDE's AI agent to any running web page through a ligh
   "mcpServers": {
     "mcp-browser-lens": {
       "command": "npx",
-      "args": ["-y", "mcp-browser-lens@latest"]
+      "args": ["-y", "browser-lens-mcp@latest"]
     }
   }
 }
@@ -86,7 +86,7 @@ Browser Lens connects your IDE's AI agent to any running web page through a ligh
     "mcp-browser-lens": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "mcp-browser-lens@latest"]
+      "args": ["-y", "browser-lens-mcp@latest"]
     }
   }
 }
@@ -99,7 +99,7 @@ Browser Lens connects your IDE's AI agent to any running web page through a ligh
 **Run once** — adds to `~/.claude.json`:
 
 ```bash
-claude mcp add mcp-browser-lens npx -y mcp-browser-lens@latest
+claude mcp add mcp-browser-lens npx -y browser-lens-mcp@latest
 ```
 </details>
 
@@ -113,7 +113,7 @@ claude mcp add mcp-browser-lens npx -y mcp-browser-lens@latest
   "mcpServers": {
     "mcp-browser-lens": {
       "command": "npx",
-      "args": ["-y", "mcp-browser-lens@latest"]
+      "args": ["-y", "browser-lens-mcp@latest"]
     }
   }
 }
@@ -130,7 +130,7 @@ claude mcp add mcp-browser-lens npx -y mcp-browser-lens@latest
   "mcpServers": {
     "mcp-browser-lens": {
       "command": "npx",
-      "args": ["-y", "mcp-browser-lens@latest"]
+      "args": ["-y", "browser-lens-mcp@latest"]
     }
   }
 }
@@ -148,7 +148,7 @@ claude mcp add mcp-browser-lens npx -y mcp-browser-lens@latest
     "mcp-browser-lens": {
       "command": {
         "path": "npx",
-        "args": ["-y", "mcp-browser-lens@latest"]
+        "args": ["-y", "browser-lens-mcp@latest"]
       }
     }
   }
@@ -162,7 +162,7 @@ claude mcp add mcp-browser-lens npx -y mcp-browser-lens@latest
 The server communicates via **stdio** transport. Run:
 
 ```bash
-npx mcp-browser-lens@latest
+npx browser-lens-mcp@latest
 ```
 
 Connect your MCP client to the process stdin/stdout.
@@ -325,7 +325,7 @@ Works with **any design tool** — Figma, Sketch, Adobe XD, Zeplin, Penpot. Just
 **Custom port example:**
 
 ```bash
-MCP_BROWSER_LENS_PORT=4000 MCP_BROWSER_LENS_WS_PORT=4001 npx mcp-browser-lens
+MCP_BROWSER_LENS_PORT=4000 MCP_BROWSER_LENS_WS_PORT=4001 npx browser-lens-mcp
 ```
 
 ---
