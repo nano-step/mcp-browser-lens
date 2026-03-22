@@ -180,6 +180,23 @@ claude mcp add browser-lens npx -y browser-lens-mcp@latest
 
 ### Step 2 — Connect your browser
 
+**Option A: Chrome Extension** (recommended — persists across page reloads)
+
+```bash
+# Find the extension folder
+ls node_modules/browser-lens-mcp/extension/
+```
+
+1. Open `chrome://extensions` in Chrome/Edge
+2. Enable **Developer Mode** (top right)
+3. Click **Load unpacked**
+4. Select `node_modules/browser-lens-mcp/extension/`
+5. Done — auto-connects on every page load, survives reload!
+
+Configure ports via the extension popup icon.
+
+**Option B: Bookmarklet** (zero install, one-time per page)
+
 1. Open **http://localhost:3202** (or your custom port)
 2. Drag the **bookmarklet** to your bookmarks bar
 3. Navigate to any web app → click the bookmarklet

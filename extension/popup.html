@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:280px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#fafafa;padding:16px}
+.header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.header svg{flex-shrink:0}
+.header h1{font-size:15px;font-weight:700;background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.status{padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.status.on{background:#052e16;border:1px solid #14532d;color:#22c55e}
+.status.off{background:#1c1917;border:1px solid #44403c;color:#f59e0b}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.on{background:#22c55e}
+.dot.off{background:#f59e0b}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:#71717a;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.field input{width:100%;padding:8px 10px;background:#18181b;border:1px solid #27272a;border-radius:6px;color:#fafafa;font-size:13px;font-family:monospace}
+.field input:focus{outline:none;border-color:#8b5cf6}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#18181b;border:1px solid #27272a;border-radius:8px;margin-bottom:12px;cursor:pointer}
+.toggle span{font-size:13px;font-weight:500}
+.switch{width:36px;height:20px;border-radius:10px;background:#27272a;position:relative;transition:background .2s}
+.switch.on{background:#8b5cf6}
+.switch::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fafafa;top:2px;left:2px;transition:transform .2s}
+.switch.on::after{transform:translateX(16px)}
+.btn{width:100%;padding:8px;background:#8b5cf6;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
+.btn:hover{background:#7c3aed}
+.footer{margin-top:12px;text-align:center;font-size:10px;color:#52525b}
+.footer a{color:#8b5cf6;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="header">
+<svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0e1628"/><circle cx="16" cy="16" r="6" stroke="#8b5cf6" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="16" cy="16" r="2.5" fill="#06b6d4"/><path d="M22 22l3 3" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/></svg>
+<h1>Browser Lens</h1>
+</div>
+<div id="status" class="status off"><span class="dot off"></span>Checking...</div>
+<div class="toggle" id="toggleBtn">
+<span>Auto-inject on page load</span>
+<div id="switchEl" class="switch on"></div>
+</div>
+<div class="field">
+<label>HTTP Port</label>
+<input id="httpPort" type="number" value="3202">
+</div>
+<div class="field">
+<label>WebSocket Port</label>
+<input id="wsPort" type="number" value="3203">
+</div>
+<button class="btn" id="saveBtn">Save & Reconnect</button>
+<div class="footer">
+<a href="https://github.com/nano-step/mcp-browser-lens" target="_blank">GitHub</a> · <a href="https://www.npmjs.com/package/browser-lens-mcp" target="_blank">npm</a>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

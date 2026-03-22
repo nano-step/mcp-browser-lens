@@ -211,6 +211,33 @@ export function createHttpReceiver(
       return;
     }
 
+    if (req.method === "GET" && url.pathname === "/extension") {
+      const extDir = path.resolve(__dirname, "..", "..", "..", "extension");
+      try {
+        const files = ["manifest.json", "background.js", "content.js", "popup.html", "popup.js"];
+        const iconFiles = ["icons/icon16.png", "icons/icon48.png", "icons/icon128.png"];
+        const allFiles = [...files, ...iconFiles];
+        const fileData: Record<string, Buffer> = {};
+        for (const f of allFiles) {
+          const fp = path.join(extDir, f);
+          if (fs.existsSync(fp)) fileData[f] = fs.readFileSync(fp);
+        }
+        res.writeHead(200, {
+          ...CORS_HEADERS,
+          "Content-Type": "application/json",
+        });
+        res.end(JSON.stringify({
+          message: "Browser Lens Chrome Extension",
+          install: "1) Go to chrome://extensions  2) Enable Developer Mode  3) Click 'Load unpacked'  4) Select the extension/ folder from the npm package",
+          npmPath: "node_modules/browser-lens-mcp/extension/",
+          files: Object.keys(fileData),
+        }));
+      } catch {
+        jsonResponse(res, 500, { error: "Extension files not found" });
+      }
+      return;
+    }
+
     if (req.method === "GET" && url.pathname === "/html2canvas.js") {
       res.writeHead(200, {
         ...CORS_HEADERS,
