@@ -287,11 +287,37 @@ function _loadH2C(){
   });
 }
 
+function _extensionCapture(){
+  return new Promise(function(resolve){
+    try{
+      if(typeof chrome!=='undefined'&&chrome.runtime&&chrome.runtime.sendMessage){
+        chrome.runtime.sendMessage({type:'captureScreenshot'},function(resp){
+          if(chrome.runtime.lastError){resolve(false);return;}
+          log('Extension screenshot requested');
+          resolve(true);
+        });
+      }else{resolve(false);}
+    }catch(e){resolve(false);}
+  });
+}
+
 function captureScreenshot(){
   return new Promise(function(resolve){
     _loadH2C().then(function(ok){
-      if(!ok){resolve(null);return;}
-      _renderScreenshot(document.body,'viewport').then(resolve);
+      if(!ok){
+        log('html2canvas unavailable, trying extension capture...');
+        _extensionCapture().then(function(sent){
+          if(sent)log('Screenshot delegated to extension');
+          else log('No screenshot method available');
+          resolve(null);
+        });
+        return;
+      }
+      _renderScreenshot(document.body,'viewport').then(function(shot){
+        if(shot){resolve(shot);return;}
+        log('html2canvas failed, trying extension capture...');
+        _extensionCapture().then(function(){resolve(null);});
+      });
     });
   });
 }

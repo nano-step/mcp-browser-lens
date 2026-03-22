@@ -1084,28 +1084,25 @@ export function registerTools(server: McpServer, store: BrowserStore, wsChannel?
       }
 
       const before = store.getScreenshots().length;
-      const sent = wsChannel.requestScreenshot();
-      const ok = await sent;
+      wsChannel.requestScreenshot();
 
-      if (ok) {
-        const shot = store.getLatestScreenshot();
-        if (shot) {
-          return imageContent(
-            shot.dataUrl,
-            `Fresh screenshot (${shot.width}x${shot.height}) captured at ${new Date(shot.timestamp).toISOString()}`,
-          );
+      for (let i = 0; i < 10; i++) {
+        await new Promise((r) => setTimeout(r, 1500));
+        const current = store.getScreenshots().length;
+        if (current > before) {
+          const shot = store.getLatestScreenshot();
+          if (shot) {
+            return imageContent(
+              shot.dataUrl,
+              `Screenshot (${shot.width}x${shot.height}) captured at ${new Date(shot.timestamp).toISOString()}`,
+            );
+          }
         }
       }
 
-      const after = store.getScreenshots().length;
-      if (after > before) {
-        const shot = store.getLatestScreenshot();
-        if (shot) return imageContent(shot.dataUrl, `Screenshot (${shot.width}x${shot.height})`);
-      }
-
       return text({
-        message: "Screenshot request sent to browser but capture failed. This usually means cross-origin images tainted the canvas. Check browser console for [BrowserLens] errors.",
-        suggestion: "The page may have cross-origin images. Try using describe_ui for a text description instead.",
+        message: "Screenshot capture timed out after 15s. The browser extension may need to be installed for reliable screenshots on pages with strict CSP.",
+        suggestion: "Install the Chrome extension from node_modules/browser-lens-mcp/extension/ — it uses chrome.tabs.captureVisibleTab() which bypasses all CORS/CSP restrictions.",
       });
     },
   );
