@@ -1,6 +1,6 @@
 {
   "name": "browser-lens-mcp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "MCP server that connects to your browser for real-time DOM, CSS, layout inspection, screenshot capture, and Figma design comparison — your IDE's AI agent sees exactly what users see",
   "type": "module",
   "main": "dist/src/index.js",
