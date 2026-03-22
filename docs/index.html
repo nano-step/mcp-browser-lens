@@ -21,6 +21,7 @@ Browser Lens
 <a href="#how">How It Works</a>
 <a href="#quickstart">Quick Start</a>
 <a href="#figma">Figma</a>
+<a href="#extension">Extension</a>
 <a href="#tools">Tools</a>
 <a href="https://github.com/nano-step/mcp-browser-lens">GitHub</a>
 <a href="https://www.npmjs.com/package/browser-lens-mcp">npm</a>
@@ -40,17 +41,17 @@ MCP Compatible
 </div>
 <div class="cmd"><span>$</span> npx browser-lens-mcp</div>
 <div class="stats">
-<div class="stat"><div class="stat-num" data-target="22">0</div><div class="stat-label">MCP Tools</div></div>
+<div class="stat"><div class="stat-num" data-target="31">0</div><div class="stat-label">MCP Tools</div></div>
 <div class="stat"><div class="stat-num" data-target="12">0</div><div class="stat-label">Resources</div></div>
 <div class="stat"><div class="stat-num" data-target="5">0</div><div class="stat-label">AI Prompts</div></div>
-<div class="stat"><div class="stat-num" data-target="8">0</div><div class="stat-label">Data Sources</div></div>
+<div class="stat"><div class="stat-num" data-target="10">0</div><div class="stat-label">Data Sources</div></div>
 </div>
 </div></section>
 
 <section class="section" id="how"><div class="c">
 <div class="section-h">
 <h2>How It Works</h2>
-<p>Bookmarklet captures everything. WebSocket streams it. MCP serves it to your IDE.</p>
+<p>Chrome Extension or Bookmarklet captures everything. WebSocket streams it. MCP serves it to your IDE.</p>
 </div>
 <img src="assets/architecture-flow.svg" alt="Architecture" class="flow-img" style="margin-bottom:40px">
 <img src="assets/bookmarklet-capture.svg" alt="Captures" class="flow-img">
@@ -78,9 +79,26 @@ MCP Compatible
 </div></div>
 <div class="step"><div class="sn">2</div><div class="sb">
 <h3>Connect your browser</h3>
-<p>Open <strong>http://localhost:3202</strong> &mdash; drag the bookmarklet to your bookmarks bar. Navigate to any web app, click it.</p>
-<pre class="ok">[Browser Lens] WebSocket connected
-[Browser Lens] Connected! DOM, CSS, layout, and visual data streaming to IDE.</pre>
+<div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+<div style="flex:1;min-width:260px;padding:16px;background:var(--bg);border:1px solid var(--gb);border-radius:8px">
+<div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Recommended: Chrome Extension</div>
+<p style="font-size:12px;color:var(--muted);margin-bottom:8px">Persists across page reloads. Auto-connects on every page.</p>
+<pre style="font-size:11px;padding:10px;margin:0">1. chrome://extensions
+2. Enable Developer Mode
+3. Load unpacked &rarr; select:
+   node_modules/browser-lens-mcp/extension/</pre>
+</div>
+<div style="flex:1;min-width:260px;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+<div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Alternative: Bookmarklet</div>
+<p style="font-size:12px;color:var(--muted);margin-bottom:8px">Zero install. One click per page load.</p>
+<pre style="font-size:11px;padding:10px;margin:0">1. Open http://localhost:3202
+2. Drag bookmarklet to bar
+3. Click on any page</pre>
+</div>
+</div>
+<pre class="ok">[BrowserLens] WebSocket connected to ws://localhost:3203
+[BrowserLens] DOM captured: 250 elements
+[BrowserLens] Screenshot OK: 1440x900</pre>
 </div></div>
 <div class="step"><div class="sn">3</div><div class="sb">
 <h3>Ask your AI agent</h3>
@@ -103,16 +121,64 @@ MCP Compatible
 
 <section class="section" id="tools"><div class="c">
 <div class="section-h">
-<h2>22 MCP Tools</h2>
+<h2>31 MCP Tools</h2>
 <p>Everything your AI agent needs to understand, inspect, and fix your UI.</p>
 </div>
 <div class="tool-grid">
+<div class="tool-card" style="border-color:#22c55e44"><h3 style="color:#86efac">Live Browser Commands</h3><p>trigger_screenshot &middot; screenshot_element &middot; live_query_element</p></div>
 <div class="tool-card"><h3>DOM Inspection</h3><p>get_dom_tree &middot; inspect_element &middot; query_selector &middot; get_element_hierarchy &middot; get_elements_summary</p></div>
 <div class="tool-card"><h3>CSS Analysis</h3><p>get_computed_styles &middot; get_css_variables &middot; get_typography &middot; get_color_palette</p></div>
 <div class="tool-card"><h3>Layout &amp; Spacing</h3><p>get_layout_info &middot; get_spacing_analysis &middot; get_responsive_info</p></div>
-<div class="tool-card"><h3>Visual &amp; Screenshots</h3><p>get_page_screenshot &middot; get_all_screenshots &middot; describe_ui</p></div>
-<div class="tool-card"><h3>Design Comparison</h3><p>compare_with_figma &middot; get_comparison_history &middot; suggest_css_fixes</p></div>
+<div class="tool-card"><h3>Visual &amp; Screenshots</h3><p>get_page_screenshot &middot; get_all_screenshots &middot; describe_ui &middot; capture_screenshot_with_analysis</p></div>
+<div class="tool-card"><h3>Design Comparison</h3><p>compare_with_figma &middot; get_comparison_history &middot; suggest_css_fixes &middot; get_visual_diff_report</p></div>
+<div class="tool-card"><h3>Page Analysis</h3><p>get_full_page_analysis &middot; get_design_tokens &middot; inspect_feature_area &middot; get_connection_status</p></div>
 <div class="tool-card"><h3>General</h3><p>get_page_info &middot; get_dom_mutations &middot; get_accessibility_info &middot; clear_data</p></div>
+</div>
+</div></section>
+
+<section class="section" id="extension"><div class="c">
+<div class="section-h">
+<h2>Chrome Extension</h2>
+<p>Auto-connect on every page load. Persists across browser reloads.</p>
+</div>
+<div style="max-width:680px;margin:0 auto">
+<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:32px">
+<div style="flex:1;min-width:300px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px 10px 0 0">
+<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff">1</div>
+<div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Open Extensions</div><div style="font-size:12px;color:var(--muted)">Navigate to <code>chrome://extensions</code></div></div>
+</div>
+<div style="display:flex;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border)">
+<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff">2</div>
+<div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Developer Mode</div><div style="font-size:12px;color:var(--muted)">Enable the toggle in the top-right corner</div></div>
+</div>
+<div style="display:flex;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:0 0 10px 10px">
+<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:#fff">3</div>
+<div><div style="font-size:14px;font-weight:600;margin-bottom:2px">Load Unpacked</div><div style="font-size:12px;color:var(--muted)">Select <code>node_modules/browser-lens-mcp/extension/</code></div></div>
+</div>
+</div>
+</div>
+<div style="flex:0 0 200px;text-align:center">
+<div style="padding:24px;background:var(--surface);border:1px solid var(--gb);border-radius:12px">
+<div style="font-size:40px;margin-bottom:8px">&#128268;</div>
+<div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px">Auto-Connect</div>
+<div style="font-size:11px;color:var(--muted)">Persists across reloads</div>
+<div style="font-size:11px;color:var(--muted)">Configurable via popup</div>
+<div style="font-size:11px;color:var(--muted)">Works on all pages</div>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div style="padding:16px;background:var(--surface);border:1px solid var(--gb);border-radius:8px;text-align:center">
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600;margin-bottom:4px">Extension</div>
+<div style="font-size:12px;color:var(--muted)">Auto-connect &middot; Persist reload &middot; Popup config</div>
+</div>
+<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center">
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:600;margin-bottom:4px">Bookmarklet</div>
+<div style="font-size:12px;color:var(--muted)">Zero install &middot; One click per page &middot; Any browser</div>
+</div>
+</div>
 </div>
 </div></section>
 
