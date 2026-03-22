@@ -277,9 +277,10 @@ function _renderScreenshot(target,type,selector){
 function _loadH2C(){
   return new Promise(function(resolve){
     if(typeof html2canvas==='function'){resolve(true);return;}
-    log('Loading html2canvas via eval (CSP-safe)...');
+    log('Loading html2canvas via fetch+eval (CSP-safe)...');
     fetch(HTTP_URL.replace('/ingest','/html2canvas.js')).then(function(r){return r.text();}).then(function(code){
-      (0,eval)(code);
+      new Function(code).call(window);
+      if(typeof html2canvas!=='function'&&window.html2canvas)html2canvas=window.html2canvas;
       log('html2canvas loaded: '+(typeof html2canvas==='function'));
       resolve(typeof html2canvas==='function');
     }).catch(function(e){err('html2canvas load failed',e);resolve(false);});
