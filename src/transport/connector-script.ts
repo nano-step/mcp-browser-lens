@@ -221,34 +221,47 @@ function captureSpacing(){
   return{timestamp:Date.now(),elements:entries,inconsistencies:[],spacingScale:Object.keys(Object.assign({},vals.margin,vals.padding)).sort(function(a,b){return parseFloat(a)-parseFloat(b)})};
 }
 
-var _ssLastOk=0,_ssFailing=false;
+var _ssLastOk=0,_ssFailing=false,_ssAttempts=0;
+function _safeExport(canvas){
+  try{return canvas.toDataURL('image/png');}
+  catch(e){return null;}
+}
 function _doCapture(opts){
   var w=Math.min(window.innerWidth,1440),h=Math.min(window.innerHeight,900);
   return html2canvas(document.body,Object.assign({scale:1,width:w,height:h,logging:false,removeContainer:true,imageTimeout:5000},opts)).then(function(canvas){
-    var dataUrl=canvas.toDataURL('image/png');
-    _ssLastOk=Date.now();_ssFailing=false;
+    var dataUrl=_safeExport(canvas);
+    if(!dataUrl)throw new Error('Canvas tainted - toDataURL blocked');
+    _ssLastOk=Date.now();_ssFailing=false;_ssAttempts=0;
     log('Screenshot OK: '+canvas.width+'x'+canvas.height);
     return{timestamp:Date.now(),type:'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'};
   });
 }
 function captureScreenshot(){
-  if(_ssFailing&&Date.now()-_ssLastOk<120000)return Promise.resolve(null);
+  if(_ssFailing&&_ssAttempts>2&&Date.now()-_ssLastOk<300000)return Promise.resolve(null);
+  _ssAttempts++;
   return new Promise(function(resolve){
-    function run(){
-      _doCapture({useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(resolve)
-      .catch(function(){
-        log('Retrying screenshot without cross-origin images...');
-        _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
-          if(el.tagName==='IMG'){var s=el.src||'';if(s&&!s.startsWith(location.origin)&&!s.startsWith('data:'))return true;}
-          return false;
-        }}).then(resolve)
-        .catch(function(e){
-          _ssFailing=true;
-          err('Screenshot failed (will retry in 2min)',e);
-          resolve(null);
-        });
+    function attempt3(){
+      log('Attempt 3: minimal capture without images/videos/iframes...');
+      _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
+        var t=el.tagName;return t==='IMG'||t==='VIDEO'||t==='IFRAME'||t==='CANVAS'||t==='SVG';
+      }}).then(resolve).catch(function(e){
+        _ssFailing=true;
+        log('All screenshot attempts failed. Will retry in 5min.');
+        resolve(null);
       });
     }
+    function attempt2(){
+      log('Attempt 2: without cross-origin images...');
+      _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
+        if(el.tagName==='IMG'){var s=el.src||'';if(s&&!s.startsWith(location.origin)&&!s.startsWith('data:'))return true;}
+        if(el.tagName==='IFRAME'||el.tagName==='VIDEO')return true;
+        return false;
+      }}).then(resolve).catch(attempt3);
+    }
+    function attempt1(){
+      _doCapture({useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(resolve).catch(attempt2);
+    }
+    function run(){try{attempt1();}catch(e){resolve(null);}}
     try{
       if(typeof html2canvas==='function'){run();}
       else{
@@ -259,7 +272,7 @@ function captureScreenshot(){
         s.onerror=function(){err('CDN load failed');resolve(null);};
         document.head.appendChild(s);
       }
-    }catch(e){err('Screenshot error',e);resolve(null);}
+    }catch(e){resolve(null);}
   });
 }
 
@@ -319,10 +332,47 @@ try{
   observer.observe(document.documentElement,{childList:true,attributes:true,subtree:true,attributeOldValue:true});
 }catch(e){err('MutationObserver failed',e);}
 
+function handleCommand(cmd){
+  try{
+    if(cmd.action==='screenshot'){
+      log('Server requested screenshot...');
+      captureScreenshot().then(function(shot){
+        if(shot){log('Sending requested screenshot');send({timestamp:Date.now(),screenshots:[shot]});}
+        else{send({timestamp:Date.now(),screenshotError:'capture failed'});}
+      });
+    }
+    else if(cmd.action==='query_element'&&cmd.selector){
+      log('Server requested element: '+cmd.selector);
+      var els=document.querySelectorAll(cmd.selector);
+      var elements={};
+      for(var i=0;i<Math.min(els.length,10);i++){
+        var d=captureElementDetail(els[i]);
+        if(d)elements[buildSelector(els[i])]=d;
+      }
+      if(Object.keys(elements).length>0){
+        send({timestamp:Date.now(),elements:elements});
+        log('Sent '+Object.keys(elements).length+' element(s) for '+cmd.selector);
+      }else{
+        log('No elements found for: '+cmd.selector);
+      }
+    }
+    else if(cmd.action==='fullsync'){
+      log('Server requested full sync');
+      fullSync();
+    }
+  }catch(e){err('Command handler error',e);}
+}
+
 function connectWs(){
   try{
     ws=new WebSocket(WS_URL);
     ws.onopen=function(){log('WebSocket connected to '+WS_URL);fullSync();};
+    ws.onmessage=function(evt){
+      try{
+        var msg=JSON.parse(evt.data);
+        if(msg.type==='command')handleCommand(msg);
+      }catch(e){}
+    };
     ws.onclose=function(){ws=null;log('WebSocket closed, reconnecting in 5s...');setTimeout(connectWs,5000);};
     ws.onerror=function(e){err('WebSocket error',e);try{ws.close();}catch(ex){}};
   }catch(e){err('WebSocket connect failed',e);setTimeout(connectWs,5000);}

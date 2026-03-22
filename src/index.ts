@@ -10,10 +10,10 @@ const HTTP_PORT = parseInt(process.env.MCP_BROWSER_LENS_PORT ?? "3202", 10);
 const WS_PORT = parseInt(process.env.MCP_BROWSER_LENS_WS_PORT ?? "3203", 10);
 
 const store = new BrowserStore();
-const mcpServer = createMcpServer(store);
+const wsChannel = createWsReceiver(store, WS_PORT);
+const mcpServer = createMcpServer(store, wsChannel);
 
 createHttpReceiver(store, HTTP_PORT, WS_PORT);
-createWsReceiver(store, WS_PORT);
 
 const transport = new StdioServerTransport();
 mcpServer.connect(transport).then(() => {

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { BrowserStore } from "../store/browser-store.js";
 import type { FigmaSpec, ComparisonDifference, ComparisonResult } from "../store/types.js";
+import type { WsCommandChannel } from "../transport/ws-receiver.js";
 
 function text(data: unknown) {
   return {
@@ -57,7 +58,7 @@ function compareValues(
   };
 }
 
-export function registerTools(server: McpServer, store: BrowserStore): void {
+export function registerTools(server: McpServer, store: BrowserStore, wsChannel?: WsCommandChannel): void {
   server.registerTool(
     "get_page_info",
     {
@@ -1065,6 +1066,115 @@ export function registerTools(server: McpServer, store: BrowserStore): void {
       }
       content.push({ type: "text" as const, text: sections.join("\n") });
       return { content };
+    },
+  );
+
+  server.registerTool(
+    "trigger_screenshot",
+    {
+      title: "Trigger Screenshot",
+      description:
+        "Request the browser to take a fresh screenshot NOW and send it back. Use this when you need the current visual state of the page. Returns the screenshot image directly.",
+    },
+    async () => {
+      if (!wsChannel) {
+        const shot = store.getLatestScreenshot();
+        if (shot) return imageContent(shot.dataUrl, `Cached screenshot (${shot.width}x${shot.height})`);
+        return text({ message: "No browser connected and no cached screenshots." });
+      }
+
+      const before = store.getScreenshots().length;
+      const sent = wsChannel.requestScreenshot();
+      const ok = await sent;
+
+      if (ok) {
+        const shot = store.getLatestScreenshot();
+        if (shot) {
+          return imageContent(
+            shot.dataUrl,
+            `Fresh screenshot (${shot.width}x${shot.height}) captured at ${new Date(shot.timestamp).toISOString()}`,
+          );
+        }
+      }
+
+      const after = store.getScreenshots().length;
+      if (after > before) {
+        const shot = store.getLatestScreenshot();
+        if (shot) return imageContent(shot.dataUrl, `Screenshot (${shot.width}x${shot.height})`);
+      }
+
+      return text({
+        message: "Screenshot request sent to browser but capture failed. This usually means cross-origin images tainted the canvas. Check browser console for [BrowserLens] errors.",
+        suggestion: "The page may have cross-origin images. Try using describe_ui for a text description instead.",
+      });
+    },
+  );
+
+  server.registerTool(
+    "live_query_element",
+    {
+      title: "Live Query Element",
+      description:
+        "Query the browser in real-time to inspect ANY element by CSS selector — even deeply nested ones. Sends a command to the browser to capture the element's computed styles, layout, text, and classes. Use this when inspect_element returns 'not found' because the element wasn't in the initial auto-capture.",
+      inputSchema: {
+        selector: z.string().describe("Any valid CSS selector (e.g. 'header button', '.hero-btn', '#login-form input[type=email]')"),
+      },
+    },
+    async (args) => {
+      if (!wsChannel) {
+        return text({
+          message: "No live browser connection. This tool requires the bookmarklet to be active.",
+          fallback: "Use inspect_element or query_selector to search cached data instead.",
+        });
+      }
+
+      const sent = wsChannel.sendCommand("query_element", { selector: args.selector });
+      if (!sent) {
+        return text({ message: "Browser not connected. Click the bookmarklet first." });
+      }
+
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const el = store.getElement(args.selector);
+      if (el) {
+        return text({
+          selector: args.selector,
+          tagName: el.snapshot?.tagName,
+          textContent: el.snapshot?.textContent,
+          classes: el.computedStyle?.appliedClasses,
+          styles: el.computedStyle?.styles,
+          layout: {
+            width: el.layout?.box.width,
+            height: el.layout?.box.height,
+            display: el.layout?.display,
+            position: el.layout?.position.type,
+          },
+          accessibility: el.accessibility,
+        });
+      }
+
+      const dom = store.getDom();
+      if (!dom) return text({ error: "No DOM data. Browser may not be connected." });
+
+      const found = store.querySelector(args.selector);
+      if (found.length > 0) {
+        return text({
+          message: `Found ${found.length} match(es) in DOM tree but detailed styles not captured for this depth. Here's what we know:`,
+          elements: found.slice(0, 10).map((f) => ({
+            selector: f.selector,
+            tagName: f.tagName,
+            id: f.id,
+            classes: f.classNames,
+            text: f.textContent.slice(0, 150),
+            childCount: f.childCount,
+          })),
+        });
+      }
+
+      return text({
+        error: `No element matching '${args.selector}' found.`,
+        suggestion: "Try a different selector. Use query_selector to search by tag name or class.",
+      });
     },
   );
 }

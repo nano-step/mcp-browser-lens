@@ -4,8 +4,9 @@ import { createHttpReceiver } from "../src/transport/http-receiver.js";
 import { createWsReceiver } from "../src/transport/ws-receiver.js";
 import { getConnectorScript } from "../src/transport/connector-script.js";
 import { createFullPayload } from "./fixtures.js";
-import WebSocket, { type WebSocketServer } from "ws";
+import WebSocket from "ws";
 import type http from "node:http";
+import type { WsCommandChannel } from "../src/transport/ws-receiver.js";
 
 const HTTP_PORT = 23400 + Math.floor(Math.random() * 100);
 const WS_PORT = HTTP_PORT + 1;
@@ -13,20 +14,20 @@ const WS_PORT = HTTP_PORT + 1;
 describe("Transport Layer", () => {
   let store: BrowserStore;
   let httpServer: http.Server;
-  let wsServer: WebSocketServer;
+  let wsChannel: WsCommandChannel;
 
   beforeAll(async () => {
     process.env.MCP_BROWSER_LENS_STORE_PATH = "/tmp/browser-lens-transport-test-" + Date.now() + ".json";
     store = new BrowserStore();
     store.clear();
     httpServer = createHttpReceiver(store, HTTP_PORT, WS_PORT);
-    wsServer = createWsReceiver(store, WS_PORT);
+    wsChannel = createWsReceiver(store, WS_PORT);
     await new Promise((r) => setTimeout(r, 300));
   });
 
   afterAll(() => {
     httpServer.close();
-    wsServer.close();
+    wsChannel.wss.close();
     store.clear();
   });
 
