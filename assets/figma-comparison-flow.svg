@@ -1,71 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" fill="none">
-  <style>
-    .fb{rx:12;stroke-width:2;fill:#18181b}
-    .fl{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#fafafa;font-size:12px;font-weight:600;text-anchor:middle}
-    .fs{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#a1a1aa;font-size:10px;text-anchor:middle}
-    .fa{stroke:#6b7280;stroke-width:2;stroke-linecap:round;marker-end:url(#fah)}
-    .fp{font-family:'SF Mono',Monaco,Consolas,monospace;fill:#71717a;font-size:9px;text-anchor:middle}
-  </style>
   <defs>
-    <marker id="fah" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0 0L7 2.5L0 5Z" fill="#6b7280"/></marker>
+    <marker id="fa" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><path d="M0 0L7 2.5L0 5Z" fill="#6b7280"/></marker>
   </defs>
-
   <rect x="0" y="0" width="900" height="200" rx="16" fill="#09090b" stroke="#27272a" stroke-width="1"/>
 
-  <!-- Step 1: Figma Specs -->
-  <rect x="20" y="40" width="140" height="120" class="fb" stroke="#a78bfa44"/>
-  <text x="90" y="70" class="fl" fill="#c4b5fd">Figma Specs</text>
-  <text x="90" y="92" class="fs">fontSize: 16px</text>
-  <text x="90" y="107" class="fs">color: #8b5cf6</text>
-  <text x="90" y="122" class="fs">borderRadius: 8px</text>
-  <text x="90" y="137" class="fs">padding: 12px 24px</text>
-  <text x="90" y="152" class="fs" fill="#71717a">Any design tool</text>
+  <rect x="20" y="40" width="140" height="120" rx="12" fill="#18181b" stroke="#a78bfa44" stroke-width="2"/>
+  <text x="90" y="70" font-family="sans-serif" fill="#c4b5fd" font-size="12" font-weight="600" text-anchor="middle">Figma Specs</text>
+  <text x="90" y="92" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">fontSize: 16px</text>
+  <text x="90" y="107" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">color: #8b5cf6</text>
+  <text x="90" y="122" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">borderRadius: 8px</text>
+  <text x="90" y="137" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">padding: 12px 24px</text>
+  <text x="90" y="152" font-family="sans-serif" fill="#71717a" font-size="10" text-anchor="middle">Any design tool</text>
 
-  <!-- Arrow 1 -->
-  <line x1="160" y1="100" x2="195" y2="100" class="fa"/>
+  <line x1="160" y1="100" x2="195" y2="100" stroke="#6b7280" stroke-width="2" stroke-linecap="round" marker-end="url(#fa)"/>
 
-  <!-- Step 2: compare_with_figma -->
-  <rect x="195" y="40" width="155" height="120" class="fb" stroke="#06b6d444"/>
-  <text x="272" y="65" class="fl" fill="#67e8f9">compare_with_figma</text>
-  <text x="272" y="87" class="fs">Property-by-property</text>
-  <text x="272" y="102" class="fs">comparison against</text>
-  <text x="272" y="117" class="fs">live browser values</text>
-  <rect x="215" y="128" width="115" height="22" rx="6" fill="#06b6d411" stroke="#06b6d433"/>
-  <text x="272" y="143" class="fp" fill="#06b6d4">MCP Tool</text>
+  <rect x="195" y="40" width="155" height="120" rx="12" fill="#18181b" stroke="#06b6d444" stroke-width="2"/>
+  <text x="272" y="65" font-family="sans-serif" fill="#67e8f9" font-size="12" font-weight="600" text-anchor="middle">compare_with_figma</text>
+  <text x="272" y="87" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">Property-by-property</text>
+  <text x="272" y="102" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">comparison against</text>
+  <text x="272" y="117" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">live browser values</text>
+  <rect x="215" y="128" width="115" height="22" rx="6" fill="#06b6d411" stroke="#06b6d433" stroke-width="1"/>
+  <text x="272" y="143" font-family="monospace" fill="#06b6d4" font-size="9" text-anchor="middle">MCP Tool</text>
 
-  <!-- Arrow 2 -->
-  <line x1="350" y1="100" x2="385" y2="100" class="fa"/>
+  <line x1="350" y1="100" x2="385" y2="100" stroke="#6b7280" stroke-width="2" stroke-linecap="round" marker-end="url(#fa)"/>
 
-  <!-- Step 3: Diff Report -->
-  <rect x="385" y="40" width="140" height="120" class="fb" stroke="#f59e0b44"/>
-  <text x="455" y="65" class="fl" fill="#fbbf24">Diff Report</text>
-  <text x="455" y="87" class="fs">Score: 84/100</text>
-  <text x="455" y="102" class="fs">3 differences found</text>
-  <text x="455" y="117" class="fs">1 major · 2 minor</text>
-  <rect x="405" y="128" width="100" height="22" rx="6" fill="#f59e0b11" stroke="#f59e0b33"/>
-  <text x="455" y="143" class="fp" fill="#f59e0b">minor-diff</text>
+  <rect x="385" y="40" width="140" height="120" rx="12" fill="#18181b" stroke="#f59e0b44" stroke-width="2"/>
+  <text x="455" y="65" font-family="sans-serif" fill="#fbbf24" font-size="12" font-weight="600" text-anchor="middle">Diff Report</text>
+  <text x="455" y="87" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">Score: 84/100</text>
+  <text x="455" y="102" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">3 differences found</text>
+  <text x="455" y="117" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">1 major · 2 minor</text>
+  <rect x="405" y="128" width="100" height="22" rx="6" fill="#f59e0b11" stroke="#f59e0b33" stroke-width="1"/>
+  <text x="455" y="143" font-family="monospace" fill="#f59e0b" font-size="9" text-anchor="middle">minor-diff</text>
 
-  <!-- Arrow 3 -->
-  <line x1="525" y1="100" x2="560" y2="100" class="fa"/>
+  <line x1="525" y1="100" x2="560" y2="100" stroke="#6b7280" stroke-width="2" stroke-linecap="round" marker-end="url(#fa)"/>
 
-  <!-- Step 4: CSS Fixes -->
-  <rect x="560" y="40" width="140" height="120" class="fb" stroke="#22c55e44"/>
-  <text x="630" y="65" class="fl" fill="#86efac">suggest_css_fixes</text>
-  <text x="630" y="87" class="fs">.btn {</text>
-  <text x="630" y="102" class="fs">  font-size: 16px;</text>
-  <text x="630" y="117" class="fs">  border-radius: 12px;</text>
-  <text x="630" y="132" class="fs">}</text>
-  <rect x="580" y="138" width="100" height="18" rx="6" fill="#22c55e11" stroke="#22c55e33"/>
-  <text x="630" y="151" class="fp" fill="#22c55e">copy-paste CSS</text>
+  <rect x="560" y="40" width="140" height="120" rx="12" fill="#18181b" stroke="#22c55e44" stroke-width="2"/>
+  <text x="630" y="65" font-family="sans-serif" fill="#86efac" font-size="12" font-weight="600" text-anchor="middle">suggest_css_fixes</text>
+  <text x="630" y="87" font-family="monospace" fill="#a1a1aa" font-size="10" text-anchor="middle">.btn {</text>
+  <text x="630" y="102" font-family="monospace" fill="#a1a1aa" font-size="10" text-anchor="middle">  font-size: 16px;</text>
+  <text x="630" y="117" font-family="monospace" fill="#a1a1aa" font-size="10" text-anchor="middle">  border-radius: 12px;</text>
+  <text x="630" y="132" font-family="monospace" fill="#a1a1aa" font-size="10" text-anchor="middle">}</text>
+  <rect x="580" y="138" width="100" height="18" rx="6" fill="#22c55e11" stroke="#22c55e33" stroke-width="1"/>
+  <text x="630" y="151" font-family="monospace" fill="#22c55e" font-size="9" text-anchor="middle">copy-paste CSS</text>
 
-  <!-- Arrow 4 -->
-  <line x1="700" y1="100" x2="735" y2="100" class="fa"/>
+  <line x1="700" y1="100" x2="735" y2="100" stroke="#6b7280" stroke-width="2" stroke-linecap="round" marker-end="url(#fa)"/>
 
-  <!-- Step 5: Verify -->
-  <rect x="735" y="40" width="140" height="120" class="fb" stroke="#22c55e44"/>
+  <rect x="735" y="40" width="140" height="120" rx="12" fill="#18181b" stroke="#22c55e44" stroke-width="2"/>
   <circle cx="805" cy="80" r="20" fill="#22c55e11" stroke="#22c55e66" stroke-width="1.5"/>
   <path d="M795 80l6 6 14-14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <text x="805" y="120" class="fl" fill="#86efac">Score: 98/100</text>
-  <text x="805" y="138" class="fs" fill="#22c55e">match ✓</text>
-  <text x="805" y="152" class="fs">Ship it!</text>
+  <text x="805" y="120" font-family="sans-serif" fill="#86efac" font-size="12" font-weight="600" text-anchor="middle">Score: 98/100</text>
+  <text x="805" y="138" font-family="sans-serif" fill="#22c55e" font-size="10" text-anchor="middle">match</text>
+  <text x="805" y="152" font-family="sans-serif" fill="#a1a1aa" font-size="10" text-anchor="middle">Ship it!</text>
 </svg>
