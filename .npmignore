@@ -1,0 +1,8 @@
+src/
+tsconfig.json
+.store/
+.gitignore
+.DS_Store
+*.tsbuildinfo
+docs/
+assets/

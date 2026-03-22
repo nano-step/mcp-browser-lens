@@ -1,0 +1,79 @@
+{
+  "name": "mcp-browser-lens",
+  "version": "1.0.0",
+  "description": "MCP server that connects to your browser for real-time DOM, CSS, layout inspection, screenshot capture, and Figma design comparison — your IDE's AI agent sees exactly what users see",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "mcp-browser-lens": "./dist/src/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/src/index.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "browser",
+    "dom",
+    "css",
+    "inspector",
+    "figma",
+    "design-comparison",
+    "screenshot",
+    "ui-audit",
+    "frontend",
+    "developer-tools",
+    "real-time",
+    "websocket",
+    "layout",
+    "accessibility",
+    "visual-testing",
+    "ide",
+    "ai-agent",
+    "cursor",
+    "vscode",
+    "claude-code"
+  ],
+  "author": {
+    "name": "Hoai Nho Nguyen",
+    "email": "nhoxtvt@gmail.com",
+    "url": "https://github.com/nano-step"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nano-step/mcp-browser-lens.git"
+  },
+  "homepage": "https://nano-step.github.io/mcp-browser-lens",
+  "bugs": {
+    "url": "https://github.com/nano-step/mcp-browser-lens/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

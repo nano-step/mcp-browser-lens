@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Browser Lens — Real-time UI Inspector for IDE AI Agents</title>
+<meta name="description" content="MCP server for real-time DOM, CSS, layout inspection, screenshot capture, and Figma design comparison. Your IDE AI agent sees exactly what users see.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojOGI1Y2Y2Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDZiNmQ0Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBlMTYyOCIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEwIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSI2IiBzdHJva2U9IiM4YjVjZjYiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjYiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIyLjUiIGZpbGw9IiMwNmI2ZDQiLz48cGF0aCBkPSJNMjIgMjJsMyAzIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+">
+<style>
+:root{--bg:#09090b;--surface:#18181b;--s2:#27272a;--border:#27272a;--bh:#3f3f46;--text:#fafafa;--muted:#a1a1aa;--dim:#71717a;--accent:#8b5cf6;--accent2:#7c3aed;--cyan:#06b6d4;--green:#22c55e;--gbg:#052e16;--gb:#14532d;--amber:#f59e0b;--red:#ef4444}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}.c{max-width:1080px;margin:0 auto;padding:0 24px}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.875em}nav{padding:16px 0;border-bottom:1px solid var(--border)}nav .c{display:flex;align-items:center;justify-content:space-between}.nav-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--text);text-decoration:none}.nav-links{display:flex;gap:24px;font-size:14px}.nav-links a{color:var(--muted)}.nav-links a:hover{color:var(--text);text-decoration:none}.hero{padding:100px 0 80px;text-align:center}.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--accent);font-weight:500;margin-bottom:28px}.hero h1{font-size:clamp(32px,5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-0.04em;margin-bottom:24px;background:linear-gradient(135deg,#8b5cf6,#06b6d4,#8b5cf6);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient 4s ease infinite}@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}.hero p{font-size:18px;color:var(--muted);max-width:620px;margin:0 auto 40px;line-height:1.7}.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;text-decoration:none;transition:all .15s;border:none;cursor:pointer}.btn-p{background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff}.btn-p:hover{opacity:.9;text-decoration:none}.btn-s{background:transparent;color:var(--text);border:1px solid var(--border)}.btn-s:hover{border-color:var(--bh);text-decoration:none}.cmd{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:14px;color:var(--green)}.cmd span{color:var(--dim)}.section{padding:80px 0}.section-h{text-align:center;margin-bottom:48px}.section-h h2{font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:12px}.section-h p{color:var(--muted);font-size:16px;max-width:600px;margin:0 auto}.flow-img{max-width:100%;margin:0 auto;display:block;border:1px solid var(--border);border-radius:12px;overflow:hidden}.steps{display:flex;flex-direction:column;gap:2px;max-width:720px;margin:0 auto}.step{display:flex;gap:18px;padding:24px;background:var(--surface);border:1px solid var(--border)}.step:first-child{border-radius:12px 12px 0 0}.step:last-child{border-radius:0 0 12px 12px}.sn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#fff}.sb{flex:1}.sb h3{font-size:15px;font-weight:600;margin-bottom:6px}.sb p{font-size:13px;color:var(--muted);line-height:1.6}.sb .path{font-size:12px;color:var(--dim);font-family:'SF Mono',Monaco,Consolas,monospace;margin-bottom:8px;display:block}.sb pre{display:block;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;color:var(--muted);overflow-x:auto;white-space:pre;margin-top:10px;line-height:1.7}.sb pre.ok{color:var(--green);background:var(--gbg);border-color:var(--gb)}.hl-key{color:#67e8f9}.hl-str{color:#86efac}.hl-comment{color:#6b7280}.hl-at{color:var(--accent);font-weight:600}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:680px;margin:40px auto 0;text-align:center}@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}.stat{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px}.stat-num{font-size:32px;font-weight:800;background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em}.stat-label{font-size:12px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;max-width:900px;margin:0 auto}.tool-card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;transition:border-color .15s}.tool-card:hover{border-color:var(--bh)}.tool-card h3{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--accent)}.tool-card p{font-size:12px;color:var(--dim);line-height:1.5}.ide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;max-width:900px;margin:0 auto}.ide-card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;text-align:center}.ide-card strong{display:block;font-size:14px;margin-bottom:4px}.ide-card code{font-size:11px;color:var(--dim);word-break:break-all}footer{padding:40px 0;border-top:1px solid var(--border);text-align:center;font-size:13px;color:var(--dim)}.cap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.cap{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;opacity:0;transform:translateY(20px);transition:all .4s}.cap.visible{opacity:1;transform:translateY(0)}.cap:hover{border-color:var(--bh)}.cap h3{font-size:14px;font-weight:600;margin-bottom:4px}.cap p{font-size:12px;color:var(--dim);line-height:1.5}
+
+</style>
+</head>
+<body>
+<nav><div class="c">
+<a href="/" class="nav-brand">
+<svg width="24" height="24" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#06b6d4"/></linearGradient></defs><rect width="32" height="32" rx="6" fill="#0e1628"/><circle cx="16" cy="16" r="10" stroke="url(#g)" stroke-width="1" fill="none" opacity="0.4"/><circle cx="16" cy="16" r="6" stroke="#8b5cf6" stroke-width="1" fill="none" opacity="0.6"/><circle cx="16" cy="16" r="2.5" fill="#06b6d4"/><path d="M22 22l3 3" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/></svg>
+Browser Lens
+</a>
+<div class="nav-links">
+<a href="#how">How It Works</a>
+<a href="#quickstart">Quick Start</a>
+<a href="#figma">Figma</a>
+<a href="#tools">Tools</a>
+<a href="https://github.com/nano-step/mcp-browser-lens">GitHub</a>
+<a href="https://www.npmjs.com/package/mcp-browser-lens">npm</a>
+</div>
+</div></nav>
+
+<section class="hero"><div class="c">
+<div class="hero-badge">
+<svg width="14" height="14" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0e1628"/><circle cx="16" cy="16" r="6" stroke="#8b5cf6" stroke-width="1.5" fill="none"/><circle cx="16" cy="16" r="2" fill="#06b6d4"/><path d="M22 22l2 2" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/></svg>
+MCP Compatible
+</div>
+<h1>See your browser<br>through your IDE's eyes</h1>
+<p>Real-time DOM, CSS, layout inspection, screenshot capture, and Figma design comparison. Your IDE AI agent sees exactly what users see. Zero code changes.</p>
+<div class="hero-actions">
+<a href="https://github.com/nano-step/mcp-browser-lens" class="btn btn-p">View on GitHub</a>
+<a href="#quickstart" class="btn btn-s">Quick Start</a>
+</div>
+<div class="cmd"><span>$</span> npx mcp-browser-lens</div>
+<div class="stats">
+<div class="stat"><div class="stat-num" data-target="22">0</div><div class="stat-label">MCP Tools</div></div>
+<div class="stat"><div class="stat-num" data-target="12">0</div><div class="stat-label">Resources</div></div>
+<div class="stat"><div class="stat-num" data-target="5">0</div><div class="stat-label">AI Prompts</div></div>
+<div class="stat"><div class="stat-num" data-target="8">0</div><div class="stat-label">Data Sources</div></div>
+</div>
+</div></section>
+
+<section class="section" id="how"><div class="c">
+<div class="section-h">
+<h2>How It Works</h2>
+<p>Bookmarklet captures everything. WebSocket streams it. MCP serves it to your IDE.</p>
+</div>
+<img src="assets/architecture-flow.svg" alt="Architecture" class="flow-img" style="margin-bottom:40px">
+<img src="assets/bookmarklet-capture.svg" alt="Captures" class="flow-img">
+</div></section>
+
+<section class="section" id="quickstart"><div class="c">
+<div class="section-h">
+<h2>Quick Start</h2>
+<p>Three steps. Under two minutes. Zero code changes.</p>
+</div>
+<div class="steps">
+<div class="step"><div class="sn">1</div><div class="sb">
+<h3>Add MCP server to your IDE</h3>
+<p>Works with Cursor, VS Code, Claude Code, Windsurf, OpenCode, Zed, and any MCP client.</p>
+<span class="path">.cursor/mcp.json</span>
+<pre><span class="hl-comment">// Cursor, Windsurf, OpenCode</span>
+{
+  <span class="hl-key">"mcpServers"</span>: {
+    <span class="hl-key">"mcp-browser-lens"</span>: {
+      <span class="hl-key">"command"</span>: <span class="hl-str">"npx"</span>,
+      <span class="hl-key">"args"</span>: [<span class="hl-str">"-y"</span>, <span class="hl-str">"mcp-browser-lens@latest"</span>]
+    }
+  }
+}</pre>
+</div></div>
+<div class="step"><div class="sn">2</div><div class="sb">
+<h3>Connect your browser</h3>
+<p>Open <strong>http://localhost:3202</strong> &mdash; drag the bookmarklet to your bookmarks bar. Navigate to any web app, click it.</p>
+<pre class="ok">[Browser Lens] WebSocket connected
+[Browser Lens] Connected! DOM, CSS, layout, and visual data streaming to IDE.</pre>
+</div></div>
+<div class="step"><div class="sn">3</div><div class="sb">
+<h3>Ask your AI agent</h3>
+<pre><span class="hl-at">@browser-lens</span> <span class="hl-str">Describe this page's UI layout and structure</span>
+<span class="hl-at">@browser-lens</span> <span class="hl-str">Compare .hero-button with Figma: fontSize 16px, borderRadius 8px</span>
+<span class="hl-at">@browser-lens</span> <span class="hl-str">Take a screenshot and audit the design</span>
+<span class="hl-at">@browser-lens</span> <span class="hl-str">Show all CSS variables on this page</span>
+<span class="hl-at">@browser-lens</span> <span class="hl-str">Suggest CSS fixes for the comparison</span></pre>
+</div></div>
+</div>
+</div></section>
+
+<section class="section" id="figma"><div class="c">
+<div class="section-h">
+<h2>Figma Design Comparison</h2>
+<p>Compare live UI against any design tool's specs. Get scores, diffs, and copy-paste CSS fixes.</p>
+</div>
+<img src="assets/figma-comparison-flow.svg" alt="Figma Comparison Flow" class="flow-img">
+</div></section>
+
+<section class="section" id="tools"><div class="c">
+<div class="section-h">
+<h2>22 MCP Tools</h2>
+<p>Everything your AI agent needs to understand, inspect, and fix your UI.</p>
+</div>
+<div class="tool-grid">
+<div class="tool-card"><h3>DOM Inspection</h3><p>get_dom_tree &middot; inspect_element &middot; query_selector &middot; get_element_hierarchy &middot; get_elements_summary</p></div>
+<div class="tool-card"><h3>CSS Analysis</h3><p>get_computed_styles &middot; get_css_variables &middot; get_typography &middot; get_color_palette</p></div>
+<div class="tool-card"><h3>Layout &amp; Spacing</h3><p>get_layout_info &middot; get_spacing_analysis &middot; get_responsive_info</p></div>
+<div class="tool-card"><h3>Visual &amp; Screenshots</h3><p>get_page_screenshot &middot; get_all_screenshots &middot; describe_ui</p></div>
+<div class="tool-card"><h3>Design Comparison</h3><p>compare_with_figma &middot; get_comparison_history &middot; suggest_css_fixes</p></div>
+<div class="tool-card"><h3>General</h3><p>get_page_info &middot; get_dom_mutations &middot; get_accessibility_info &middot; clear_data</p></div>
+</div>
+</div></section>
+
+<section class="section"><div class="c">
+<div class="section-h">
+<h2>IDE Configuration</h2>
+<p>Works with every MCP-compatible IDE. Here's where to put the config.</p>
+</div>
+<div class="ide-grid">
+<div class="ide-card"><strong>Cursor</strong><code>.cursor/mcp.json</code></div>
+<div class="ide-card"><strong>VS Code</strong><code>.vscode/mcp.json</code></div>
+<div class="ide-card"><strong>Claude Code</strong><code>~/.claude.json</code></div>
+<div class="ide-card"><strong>Windsurf</strong><code>~/.codeium/windsurf/mcp_config.json</code></div>
+<div class="ide-card"><strong>OpenCode</strong><code>~/.config/opencode/config.json</code></div>
+<div class="ide-card"><strong>Zed</strong><code>~/.config/zed/settings.json</code></div>
+</div>
+</div></section>
+
+<footer><div class="c">
+<p style="margin-bottom:8px">Built by <a href="https://github.com/nano-step"><strong>nano-step</strong></a></p>
+<p><a href="https://github.com/nano-step/mcp-browser-lens">GitHub</a> &middot; <a href="https://www.npmjs.com/package/mcp-browser-lens">npm</a> &middot; MIT License &middot; Copyright &copy; 2026 Hoai Nho Nguyen</p>
+</div></footer>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'});});});
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+document.querySelectorAll('.cap').forEach(function(el){obs.observe(el);});
+var sObs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.querySelectorAll('.stat-num').forEach(function(n){var t=parseInt(n.getAttribute('data-target')),c=0,s=Math.ceil(t/30);var i=setInterval(function(){c+=s;if(c>=t){c=t;clearInterval(i);}n.textContent=c;},30);});sObs.unobserve(e.target);}});},{threshold:0.3});
+var st=document.querySelector('.stats');if(st)sObs.observe(st);
+
+</script>
+</body>
+</html>

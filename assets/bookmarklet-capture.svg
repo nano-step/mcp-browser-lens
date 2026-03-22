@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" fill="none">
+  <style>
+    .cb{rx:10;stroke-width:1.5;fill:#18181b}
+    .cl{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#fafafa;font-size:11px;font-weight:600;text-anchor:middle}
+    .cs{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;fill:#a1a1aa;font-size:9px;text-anchor:middle}
+    .ci{rx:6;fill:#ffffff08;stroke-width:1}
+  </style>
+
+  <rect x="0" y="0" width="900" height="260" rx="16" fill="#09090b" stroke="#27272a" stroke-width="1"/>
+  <text x="450" y="28" font-family="-apple-system,sans-serif" fill="#71717a" font-size="11" text-anchor="middle" font-weight="600">BOOKMARKLET CAPTURES — ZERO CODE CHANGES</text>
+
+  <!-- Row 1 -->
+  <rect x="20" y="45" width="160" height="90" class="cb" stroke="#8b5cf644"/>
+  <rect x="35" y="55" width="130" height="24" class="ci" stroke="#8b5cf633"/>
+  <text x="100" y="72" class="cl" fill="#c4b5fd">DOM Tree</text>
+  <text x="100" y="98" class="cs">Full structure + semantics</text>
+  <text x="100" y="112" class="cs">Tags, classes, attributes</text>
+  <text x="100" y="126" class="cs">Headings, landmarks</text>
+
+  <rect x="195" y="45" width="160" height="90" class="cb" stroke="#06b6d444"/>
+  <rect x="210" y="55" width="130" height="24" class="ci" stroke="#06b6d433"/>
+  <text x="275" y="72" class="cl" fill="#67e8f9">Computed Styles</text>
+  <text x="275" y="98" class="cs">Every CSS property</text>
+  <text x="275" y="112" class="cs">Applied classes</text>
+  <text x="275" y="126" class="cs">Matched rules</text>
+
+  <rect x="370" y="45" width="160" height="90" class="cb" stroke="#f59e0b44"/>
+  <rect x="385" y="55" width="130" height="24" class="ci" stroke="#f59e0b33"/>
+  <text x="450" y="72" class="cl" fill="#fbbf24">Box Model</text>
+  <text x="450" y="98" class="cs">Width, height, padding</text>
+  <text x="450" y="112" class="cs">Margin, border</text>
+  <text x="450" y="126" class="cs">Flex & grid info</text>
+
+  <rect x="545" y="45" width="160" height="90" class="cb" stroke="#22c55e44"/>
+  <rect x="560" y="55" width="130" height="24" class="ci" stroke="#22c55e33"/>
+  <text x="625" y="72" class="cl" fill="#86efac">Screenshots</text>
+  <text x="625" y="98" class="cs">Viewport capture</text>
+  <text x="625" y="112" class="cs">PNG as base64</text>
+  <text x="625" y="126" class="cs">Returned as image</text>
+
+  <rect x="720" y="45" width="160" height="90" class="cb" stroke="#ef444444"/>
+  <rect x="735" y="55" width="130" height="24" class="ci" stroke="#ef444433"/>
+  <text x="800" y="72" class="cl" fill="#fca5a5">Accessibility</text>
+  <text x="800" y="98" class="cs">ARIA labels + roles</text>
+  <text x="800" y="112" class="cs">Alt text audit</text>
+  <text x="800" y="126" class="cs">Heading structure</text>
+
+  <!-- Row 2 -->
+  <rect x="107" y="150" width="160" height="90" class="cb" stroke="#8b5cf644"/>
+  <rect x="122" y="160" width="130" height="24" class="ci" stroke="#8b5cf633"/>
+  <text x="187" y="177" class="cl" fill="#c4b5fd">Typography</text>
+  <text x="187" y="203" class="cs">Font families + sizes</text>
+  <text x="187" y="217" class="cs">Weights, line-heights</text>
+  <text x="187" y="231" class="cs">Usage counts</text>
+
+  <rect x="282" y="150" width="160" height="90" class="cb" stroke="#22c55e44"/>
+  <rect x="297" y="160" width="130" height="24" class="ci" stroke="#22c55e33"/>
+  <text x="362" y="177" class="cl" fill="#86efac">Color Palette</text>
+  <text x="362" y="203" class="cs">Text, background, border</text>
+  <text x="362" y="217" class="cs">Hex values + counts</text>
+  <text x="362" y="231" class="cs">Unique color analysis</text>
+
+  <rect x="457" y="150" width="160" height="90" class="cb" stroke="#06b6d444"/>
+  <rect x="472" y="160" width="130" height="24" class="ci" stroke="#06b6d433"/>
+  <text x="537" y="177" class="cl" fill="#67e8f9">CSS Variables</text>
+  <text x="537" y="203" class="cs">All --* properties</text>
+  <text x="537" y="217" class="cs">From :root + sheets</text>
+  <text x="537" y="231" class="cs">Design token discovery</text>
+
+  <rect x="632" y="150" width="160" height="90" class="cb" stroke="#f59e0b44"/>
+  <rect x="647" y="160" width="130" height="24" class="ci" stroke="#f59e0b33"/>
+  <text x="712" y="177" class="cl" fill="#fbbf24">Responsive</text>
+  <text x="712" y="203" class="cs">Viewport + DPR</text>
+  <text x="712" y="217" class="cs">Active breakpoints</text>
+  <text x="712" y="231" class="cs">Media queries</text>
+</svg>
