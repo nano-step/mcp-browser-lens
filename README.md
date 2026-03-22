@@ -380,8 +380,83 @@ IDE ← MCP Server ← WebSocket ← Send result
 - `query_element` — Inspect any element by CSS selector on-demand
 - `fullsync` — Trigger a full data re-capture
 
-**Screenshot CORS handling:**
-Cross-origin images (CDN logos, external assets) are temporarily replaced with same-size grey placeholders before capture, then restored. This ensures screenshots always succeed while preserving layout accuracy.
+---
+
+## Screenshots (CDP — 100% Reliable)
+
+Screenshots use **Chrome DevTools Protocol (CDP)** via `puppeteer-core` — captures exactly what you see in the browser. No CORS issues, no CSP restrictions, works on any page.
+
+### Setup: Launch browser with remote debugging
+
+<details open>
+<summary><strong>Brave Browser (Mac)</strong></summary>
+
+```bash
+/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222
+```
+</details>
+
+<details>
+<summary><strong>Google Chrome (Mac)</strong></summary>
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
+```
+</details>
+
+<details>
+<summary><strong>Google Chrome (Linux)</strong></summary>
+
+```bash
+google-chrome --remote-debugging-port=9222
+```
+</details>
+
+<details>
+<summary><strong>Microsoft Edge (Mac)</strong></summary>
+
+```bash
+/Applications/Microsoft\ Edge.app/Contents/MacOS/Microsoft\ Edge --remote-debugging-port=9222
+```
+</details>
+
+<details>
+<summary><strong>Tip: Create a shell alias</strong></summary>
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+alias brave-debug='/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222'
+alias chrome-debug='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222'
+
+# Then just run
+brave-debug
+```
+</details>
+
+**Verify CDP is running:**
+
+```bash
+curl http://127.0.0.1:9222/json/version
+# Should show: {"Browser":"Brave/...","webSocketDebuggerUrl":"ws://..."}
+```
+
+### Screenshot tools
+
+| Tool | What it does |
+|------|-------------|
+| `trigger_screenshot` | Capture full viewport — returns PNG image directly |
+| `screenshot_element` | Capture specific element by CSS selector (e.g. `header`, `.hero-btn`) |
+
+### Screenshot fallback chain
+
+```
+trigger_screenshot / screenshot_element
+  ├─ 1. CDP (puppeteer-core) ← primary, 100% reliable
+  ├─ 2. WS command → bookmarklet → html2canvas (simple pages)
+  └─ 3. Return cached screenshot if available
+```
+
+CDP auto-scans ports 9222, 9229, 9333. Set `MCP_BROWSER_LENS_CDP_PORT` for custom port.
 
 ---
 
@@ -391,7 +466,25 @@ Cross-origin images (CDN logos, external assets) are temporarily replaced with s
 |----------|---------|-------------|
 | `MCP_BROWSER_LENS_PORT` | `3202` | HTTP server port |
 | `MCP_BROWSER_LENS_WS_PORT` | `3203` | WebSocket server port |
+| `MCP_BROWSER_LENS_CDP_PORT` | `9222` | Chrome DevTools Protocol port for screenshots |
 | `MCP_BROWSER_LENS_STORE_PATH` | `.store/browser.json` | Custom store path |
+
+**Full config example:**
+
+```json
+{
+  "mcpServers": {
+    "browser-lens": {
+      "command": "npx",
+      "args": ["-y", "browser-lens-mcp@latest"],
+      "env": {
+        "MCP_BROWSER_LENS_PORT": "3300",
+        "MCP_BROWSER_LENS_WS_PORT": "3301",
+        "MCP_BROWSER_LENS_CDP_PORT": "9222"
+      }
+    }
+  }
+}
 
 ---
 

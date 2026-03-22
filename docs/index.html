@@ -20,6 +20,7 @@ Browser Lens
 <div class="nav-links">
 <a href="#how">How It Works</a>
 <a href="#quickstart">Quick Start</a>
+<a href="#screenshots">Screenshots</a>
 <a href="#figma">Figma</a>
 <a href="#extension">Extension</a>
 <a href="#tools">Tools</a>
@@ -108,6 +109,46 @@ MCP Compatible
 <span class="hl-at">@browser-lens</span> <span class="hl-str">Show all CSS variables on this page</span>
 <span class="hl-at">@browser-lens</span> <span class="hl-str">Suggest CSS fixes for the comparison</span></pre>
 </div></div>
+</div>
+</div></section>
+
+<section class="section" id="screenshots"><div class="c">
+<div class="section-h">
+<h2>Screenshots via CDP</h2>
+<p>100% reliable screenshots using Chrome DevTools Protocol. No CORS, no CSP — captures exactly what you see.</p>
+</div>
+<div style="max-width:720px;margin:0 auto">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+<div style="padding:16px;background:var(--surface);border:1px solid var(--gb);border-radius:10px">
+<div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:8px">trigger_screenshot</div>
+<div style="font-size:12px;color:var(--muted)">Full viewport capture. Returns PNG image directly to IDE chat.</div>
+</div>
+<div style="padding:16px;background:var(--surface);border:1px solid var(--gb);border-radius:10px">
+<div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:8px">screenshot_element</div>
+<div style="font-size:12px;color:var(--muted)">Capture specific element by CSS selector. Cropped to just that component.</div>
+</div>
+</div>
+<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:16px">
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">Setup: Launch browser with remote debugging</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+<div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px">Brave (Mac)</div>
+<code style="font-size:11px;color:var(--muted);word-break:break-all">/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser --remote-debugging-port=9222</code>
+</div>
+<div style="padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+<div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px">Chrome (Mac)</div>
+<code style="font-size:11px;color:var(--muted);word-break:break-all">/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222</code>
+</div>
+<div style="padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+<div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px">Chrome (Linux)</div>
+<code style="font-size:11px;color:var(--muted)">google-chrome --remote-debugging-port=9222</code>
+</div>
+</div>
+</div>
+<div style="padding:12px 16px;background:var(--gbg);border:1px solid var(--gb);border-radius:8px;font-size:12px;color:var(--green)">
+<strong>Verify:</strong> <code style="color:var(--green)">curl http://127.0.0.1:9222/json/version</code><br>
+Auto-scans ports 9222, 9229, 9333. Set <code>MCP_BROWSER_LENS_CDP_PORT</code> for custom port.
+</div>
 </div>
 </div></section>
 
