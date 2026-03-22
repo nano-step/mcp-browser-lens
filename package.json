@@ -1,6 +1,6 @@
 {
   "name": "browser-lens-mcp",
-  "version": "3.1.1",
+  "version": "4.0.0",
   "description": "MCP server that connects to your browser for real-time DOM, CSS, layout inspection, screenshot capture, and Figma design comparison — your IDE's AI agent sees exactly what users see",
   "type": "module",
   "main": "dist/src/index.js",
@@ -71,6 +71,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "browser-lens-mcp": "^3.1.0",
     "html2canvas": "^1.4.1",
+    "puppeteer-core": "^24.40.0",
     "ws": "^8.19.0"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { BrowserStore } from "../store/browser-store.js";
 import type { FigmaSpec, ComparisonDifference, ComparisonResult } from "../store/types.js";
 import type { WsCommandChannel } from "../transport/ws-receiver.js";
+import { cdpCaptureScreenshot, isCdpAvailable } from "../transport/cdp-capture.js";
 
 function text(data: unknown) {
   return {
@@ -1074,35 +1075,39 @@ export function registerTools(server: McpServer, store: BrowserStore, wsChannel?
     {
       title: "Trigger Screenshot",
       description:
-        "Request the browser to take a fresh screenshot NOW and send it back. Use this when you need the current visual state of the page. Returns the screenshot image directly.",
+        "Take a screenshot of the current browser page. Uses Chrome DevTools Protocol for reliable capture (requires Chrome launched with --remote-debugging-port=9222). Falls back to bookmarklet capture if CDP unavailable.",
     },
     async () => {
-      if (!wsChannel) {
-        const shot = store.getLatestScreenshot();
-        if (shot) return imageContent(shot.dataUrl, `Cached screenshot (${shot.width}x${shot.height})`);
-        return text({ message: "No browser connected and no cached screenshots." });
+      const cdpShot = await cdpCaptureScreenshot();
+      if (cdpShot) {
+        store.ingest({
+          timestamp: Date.now(),
+          screenshots: [{ timestamp: Date.now(), type: "viewport", width: cdpShot.width, height: cdpShot.height, dataUrl: cdpShot.dataUrl, format: "png" }],
+        });
+        return imageContent(cdpShot.dataUrl, `Screenshot via CDP (${cdpShot.width}x${cdpShot.height})`);
       }
 
-      const before = store.getScreenshots().length;
-      wsChannel.requestScreenshot();
-
-      for (let i = 0; i < 10; i++) {
-        await new Promise((r) => setTimeout(r, 1500));
-        const current = store.getScreenshots().length;
-        if (current > before) {
-          const shot = store.getLatestScreenshot();
-          if (shot) {
-            return imageContent(
-              shot.dataUrl,
-              `Screenshot (${shot.width}x${shot.height}) captured at ${new Date(shot.timestamp).toISOString()}`,
-            );
+      if (wsChannel) {
+        const before = store.getScreenshots().length;
+        wsChannel.requestScreenshot();
+        for (let i = 0; i < 6; i++) {
+          await new Promise((r) => setTimeout(r, 2000));
+          if (store.getScreenshots().length > before) {
+            const shot = store.getLatestScreenshot();
+            if (shot) return imageContent(shot.dataUrl, `Screenshot (${shot.width}x${shot.height})`);
           }
         }
       }
 
+      const cached = store.getLatestScreenshot();
+      if (cached) return imageContent(cached.dataUrl, `Cached screenshot (${cached.width}x${cached.height})`);
+
+      const cdpReady = await isCdpAvailable();
       return text({
-        message: "Screenshot capture timed out after 15s. The browser extension may need to be installed for reliable screenshots on pages with strict CSP.",
-        suggestion: "Install the Chrome extension from node_modules/browser-lens-mcp/extension/ — it uses chrome.tabs.captureVisibleTab() which bypasses all CORS/CSP restrictions.",
+        message: "Screenshot capture failed.",
+        cdpAvailable: cdpReady,
+        setup: "Launch Chrome with: google-chrome --remote-debugging-port=9222\nOr on Mac: /Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9222",
+        env: "Set MCP_BROWSER_LENS_CDP_PORT if using a different port (default: 9222)",
       });
     },
   );
@@ -1180,16 +1185,32 @@ export function registerTools(server: McpServer, store: BrowserStore, wsChannel?
     {
       title: "Screenshot Element",
       description:
-        "Take a screenshot of a specific UI component/element by CSS selector. Returns the cropped PNG image of just that element. Use this to visually inspect a button, header, card, form, or any specific part of the page.",
+        "Take a screenshot of a specific UI component/element by CSS selector. Returns the cropped PNG image of just that element. Uses CDP for reliable capture.",
       inputSchema: {
         selector: z.string().describe("CSS selector of the element to screenshot (e.g. 'header', '.hero-btn', '#login-form', 'nav.sidebar')"),
       },
     },
     async (args) => {
+      const cdpShot = await cdpCaptureScreenshot(args.selector);
+      if (cdpShot) {
+        store.ingest({
+          timestamp: Date.now(),
+          screenshots: [{ timestamp: Date.now(), type: "element", selector: args.selector, width: cdpShot.width, height: cdpShot.height, dataUrl: cdpShot.dataUrl, format: "png" }],
+        });
+        const el = store.getElement(args.selector);
+        const desc: string[] = [`## Element Screenshot: \`${args.selector}\``, `**Size:** ${cdpShot.width}x${cdpShot.height}px`];
+        if (el) {
+          desc.push(`**Tag:** ${el.snapshot?.tagName ?? "?"}`);
+          if (el.snapshot?.textContent) desc.push(`**Text:** "${el.snapshot.textContent.slice(0, 100)}"`);
+          desc.push(`**Classes:** ${el.computedStyle?.appliedClasses?.join(", ") ?? "none"}`);
+        }
+        const base64 = cdpShot.dataUrl.replace(/^data:image\/\w+;base64,/, "");
+        return { content: [{ type: "image" as const, data: base64, mimeType: "image/png" as const }, { type: "text" as const, text: desc.join("\n") }] };
+      }
+
       if (!wsChannel) {
         return text({
-          message: "No live browser connection. This tool requires the bookmarklet to be active.",
-          suggestion: "Use get_connection_status for setup instructions.",
+          message: "No screenshot method available. Launch Chrome with --remote-debugging-port=9222 for CDP screenshots, or connect the bookmarklet.",
         });
       }
 
