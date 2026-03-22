@@ -290,34 +290,58 @@ Works with **any design tool** — Figma, Sketch, Adobe XD, Zeplin. Just provide
 
 ---
 
-## MCP Prompts (5)
+## MCP Prompts (5) — `/` Commands in IDE
 
-| Prompt | Description |
-|--------|-------------|
-| `compare_with_figma` | Guided Figma comparison workflow |
-| `audit_ui` | Comprehensive UI audit |
-| `describe_page` | Detailed page description |
-| `suggest_fixes` | Prioritized fix list |
-| `visual_qa` | Visual QA pass/fail report |
+Type `/` in your IDE chat to see these guided workflows:
+
+| Prompt | When to Use | What It Does |
+|--------|-------------|-------------|
+| `/compare_with_figma` | After implementing a UI from Figma | Walks through comparing each element, generates CSS fixes |
+| `/audit_ui` | Before PR review or release | Audits colors, typography, spacing, accessibility — rates 1-10 |
+| `/describe_page` | When you need to explain the current UI to AI | Generates detailed page description with structure, styles, elements |
+| `/suggest_fixes` | After running comparisons | Collects all failing comparisons + a11y issues → prioritized fix list |
+| `/visual_qa` | Final check before shipping | Takes screenshot, compares elements, outputs PASS/NEEDS_WORK/FAIL |
+
+**Example usage in Antigravity/Cursor:**
+```
+/compare_with_figma
+→ AI reads current page data, asks for Figma specs, runs comparisons, suggests fixes
+
+/audit_ui
+→ AI analyzes colors (too many?), typography (consistent?), spacing (scale?), a11y (issues?)
+```
 
 ---
 
-## MCP Resources (12)
+## MCP Resources (12) — `@` References in IDE
 
-| URI | Description |
-|-----|-------------|
-| `dom://snapshot` | Full DOM tree |
-| `dom://elements` | Element selectors |
-| `dom://mutations` | DOM changes |
-| `css://variables` | Custom properties |
-| `css://typography` | Font analysis |
-| `css://colors` | Color palette |
-| `layout://responsive` | Viewport info |
-| `layout://spacing` | Spacing analysis |
-| `visual://screenshots` | Screenshot metadata |
-| `a11y://audit` | Accessibility audit |
-| `figma://comparisons` | Comparison results |
-| `browser://page` | Page info |
+Type `@mcp:browser-lens/` in your IDE to access these data sources directly:
+
+| Resource | Shorthand | When to Use | Example |
+|----------|-----------|-------------|---------|
+| `dom://snapshot` | `@browser-lens/dom-snapshot` | Get the full DOM tree structure | "Show me the page structure" |
+| `dom://elements` | `@browser-lens/dom-elements` | List all captured element selectors | "What elements are captured?" |
+| `dom://mutations` | `@browser-lens/mutations-log` | Check recent DOM changes | "What changed since last sync?" |
+| `css://variables` | `@browser-lens/css-variables` | Get all CSS custom properties | "What design tokens exist?" |
+| `css://typography` | `@browser-lens/css-typography` | Get font usage analysis | "What fonts are used?" |
+| `css://colors` | `@browser-lens/css-colors` | Get color palette | "What colors are on this page?" |
+| `layout://responsive` | `@browser-lens/layout-responsive` | Get viewport & breakpoints | "What breakpoint is active?" |
+| `layout://spacing` | `@browser-lens/layout-spacing` | Get spacing analysis | "Is spacing consistent?" |
+| `visual://screenshots` | `@browser-lens/visual-screenshots` | List captured screenshots | "How many screenshots exist?" |
+| `a11y://audit` | `@browser-lens/accessibility-info` | Get accessibility audit | "Any a11y issues?" |
+| `figma://comparisons` | `@browser-lens/comparison-results` | Get comparison results | "How did the last comparison go?" |
+| `browser://page` | `@browser-lens/page-info` | Get page info summary | "Is browser connected?" |
+
+**Example usage:**
+```
+@browser-lens/css-colors Tell me the primary colors used on this page
+@browser-lens/dom-snapshot Show me the semantic structure
+@browser-lens/accessibility-info Are there any accessibility issues?
+```
+
+**Resources vs Tools:**
+- **Resources** (`@`) = Read-only data snapshots. Fast, no browser command needed. Use for quick lookups.
+- **Tools** = Actions that can query the browser live, take screenshots, compare with Figma. Use for interactive work.
 
 ---
 
@@ -334,11 +358,13 @@ IDE ← MCP Server ← WebSocket ← Send result
 ```
 
 **Commands the server can send to the browser:**
-- `screenshot` — Capture and send a fresh screenshot
+- `screenshot` — Capture viewport screenshot (cross-origin images auto-replaced with placeholders)
+- `element_screenshot` — Capture a specific element by CSS selector
 - `query_element` — Inspect any element by CSS selector on-demand
 - `fullsync` — Trigger a full data re-capture
 
-This means your AI agent can ask about ANY element, even ones not in the initial auto-capture.
+**Screenshot CORS handling:**
+Cross-origin images (CDN logos, external assets) are temporarily replaced with same-size grey placeholders before capture, then restored. This ensures screenshots always succeed while preserving layout accuracy.
 
 ---
 

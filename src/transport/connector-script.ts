@@ -221,47 +221,62 @@ function captureSpacing(){
   return{timestamp:Date.now(),elements:entries,inconsistencies:[],spacingScale:Object.keys(Object.assign({},vals.margin,vals.padding)).sort(function(a,b){return parseFloat(a)-parseFloat(b)})};
 }
 
-var _ssLastOk=0,_ssFailing=false,_ssAttempts=0;
 function _safeExport(canvas){
   try{return canvas.toDataURL('image/png');}
   catch(e){return null;}
 }
-function _doCapture(opts){
-  var w=Math.min(window.innerWidth,1440),h=Math.min(window.innerHeight,900);
-  return html2canvas(document.body,Object.assign({scale:1,width:w,height:h,logging:false,removeContainer:true,imageTimeout:5000},opts)).then(function(canvas){
-    var dataUrl=_safeExport(canvas);
-    if(!dataUrl)throw new Error('Canvas tainted - toDataURL blocked');
-    _ssLastOk=Date.now();_ssFailing=false;_ssAttempts=0;
-    log('Screenshot OK: '+canvas.width+'x'+canvas.height);
-    return{timestamp:Date.now(),type:'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'};
+
+function _neutralizeCrossOrigin(root){
+  var originals=[];
+  root.querySelectorAll('img').forEach(function(img){
+    var src=img.src||'';
+    if(src&&!src.startsWith(location.origin)&&!src.startsWith('data:')&&!src.startsWith('blob:')){
+      var w=img.naturalWidth||img.offsetWidth||100;
+      var h=img.naturalHeight||img.offsetHeight||100;
+      originals.push({el:img,src:img.src,srcset:img.srcset||''});
+      img.srcset='';
+      img.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><rect width="100%" height="100%" fill="%2327272a"/><text x="50%" y="50%" fill="%2371717a" font-size="12" text-anchor="middle" dominant-baseline="middle">img</text></svg>');
+    }
+  });
+  root.querySelectorAll('iframe,video').forEach(function(el){
+    originals.push({el:el,vis:el.style.visibility});
+    el.style.visibility='hidden';
+  });
+  return originals;
+}
+
+function _restoreCrossOrigin(originals){
+  originals.forEach(function(o){
+    if(o.src!==undefined){o.el.src=o.src;if(o.srcset)o.el.srcset=o.srcset;}
+    if(o.vis!==undefined)o.el.style.visibility=o.vis;
   });
 }
+
+function _renderScreenshot(target,type,selector){
+  var saved=_neutralizeCrossOrigin(target);
+  var w=target===document.body?Math.min(window.innerWidth,1440):undefined;
+  var h=target===document.body?Math.min(window.innerHeight,900):undefined;
+  var opts={scale:1,logging:false,removeContainer:true,imageTimeout:3000,useCORS:false,allowTaint:false,foreignObjectRendering:false};
+  if(w)opts.width=w;
+  if(h)opts.height=h;
+  return html2canvas(target,opts).then(function(canvas){
+    _restoreCrossOrigin(saved);
+    var dataUrl=_safeExport(canvas);
+    if(!dataUrl){_restoreCrossOrigin(saved);return null;}
+    var result={timestamp:Date.now(),type:type||'viewport',width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'};
+    if(selector)result.selector=selector;
+    log('Screenshot OK: '+(selector||'viewport')+' '+canvas.width+'x'+canvas.height);
+    return result;
+  }).catch(function(e){
+    _restoreCrossOrigin(saved);
+    err('html2canvas render failed',e);
+    return null;
+  });
+}
+
 function captureScreenshot(){
-  if(_ssFailing&&_ssAttempts>2&&Date.now()-_ssLastOk<300000)return Promise.resolve(null);
-  _ssAttempts++;
   return new Promise(function(resolve){
-    function attempt3(){
-      log('Attempt 3: minimal capture without images/videos/iframes...');
-      _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
-        var t=el.tagName;return t==='IMG'||t==='VIDEO'||t==='IFRAME'||t==='CANVAS'||t==='SVG';
-      }}).then(resolve).catch(function(e){
-        _ssFailing=true;
-        log('All screenshot attempts failed. Will retry in 5min.');
-        resolve(null);
-      });
-    }
-    function attempt2(){
-      log('Attempt 2: without cross-origin images...');
-      _doCapture({useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(el){
-        if(el.tagName==='IMG'){var s=el.src||'';if(s&&!s.startsWith(location.origin)&&!s.startsWith('data:'))return true;}
-        if(el.tagName==='IFRAME'||el.tagName==='VIDEO')return true;
-        return false;
-      }}).then(resolve).catch(attempt3);
-    }
-    function attempt1(){
-      _doCapture({useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(resolve).catch(attempt2);
-    }
-    function run(){try{attempt1();}catch(e){resolve(null);}}
+    function run(){_renderScreenshot(document.body,'viewport').then(resolve);}
     try{
       if(typeof html2canvas==='function'){run();}
       else{
@@ -336,33 +351,12 @@ function captureElementScreenshot(selector){
   return new Promise(function(resolve){
     var el=document.querySelector(selector);
     if(!el){resolve(null);return;}
-    function doCapture(){
-      var rect=el.getBoundingClientRect();
-      var opts={scale:1,logging:false,removeContainer:true,imageTimeout:5000,
-        x:rect.left+window.scrollX,y:rect.top+window.scrollY,
-        width:Math.ceil(rect.width),height:Math.ceil(rect.height),
-        windowWidth:document.documentElement.scrollWidth,
-        windowHeight:document.documentElement.scrollHeight,
-        useCORS:true,allowTaint:false,foreignObjectRendering:false};
-      html2canvas(el,{scale:1,logging:false,removeContainer:true,imageTimeout:5000,useCORS:true,allowTaint:false,foreignObjectRendering:false}).then(function(canvas){
-        var dataUrl=_safeExport(canvas);
-        if(dataUrl){
-          log('Element screenshot OK: '+selector+' '+canvas.width+'x'+canvas.height);
-          resolve({timestamp:Date.now(),type:'element',selector:selector,width:canvas.width,height:canvas.height,dataUrl:dataUrl,format:'png'});
-        }else{
-          html2canvas(el,{scale:1,logging:false,removeContainer:true,useCORS:false,allowTaint:false,foreignObjectRendering:false,ignoreElements:function(e){var t=e.tagName;return t==='IMG'||t==='VIDEO'||t==='IFRAME'||t==='CANVAS';}}).then(function(c2){
-            var d2=_safeExport(c2);
-            if(d2)resolve({timestamp:Date.now(),type:'element',selector:selector,width:c2.width,height:c2.height,dataUrl:d2,format:'png'});
-            else resolve(null);
-          }).catch(function(){resolve(null);});
-        }
-      }).catch(function(){resolve(null);});
-    }
-    if(typeof html2canvas==='function'){doCapture();}
+    function run(){_renderScreenshot(el,'element',selector).then(resolve);}
+    if(typeof html2canvas==='function'){run();}
     else{
       var s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload=doCapture;s.onerror=function(){resolve(null);};
+      s.onload=run;s.onerror=function(){resolve(null);};
       document.head.appendChild(s);
     }
   });

@@ -187,8 +187,9 @@ describe("Transport Layer", () => {
     it("has tainted canvas protection", () => {
       const script = getConnectorScript(3300, 3301);
       expect(script).toContain("allowTaint:false");
-      expect(script).toContain("ignoreElements");
-      expect(script).toContain("_ssFailing");
+      expect(script).toContain("_safeExport");
+      expect(script).toContain("_neutralizeCrossOrigin");
+      expect(script).toContain("_restoreCrossOrigin");
     });
 
     it("has error logging", () => {
